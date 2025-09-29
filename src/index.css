@@ -1,0 +1,532 @@
+/* tailwindcss utilities */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Financial Services Design System - Professional mortgage calculator styling */
+
+@layer base {
+  :root {
+    --background: 210 40% 98%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+
+    /* Financial brand colors */
+    --primary: 217 91% 60%;
+    --primary-foreground: 0 0% 100%;
+    --primary-dark: 217 91% 45%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --accent: 142 76% 36%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 217 91% 60%;
+
+    /* Financial calculator specific colors */
+    --mortgage-blue: 217 91% 60%;
+    --mortgage-navy: 222.2 47.4% 11.2%;
+    --success-green: 142 76% 36%;
+    --warning-amber: 45 93% 47%;
+    --neutral-slate: 215.4 16.3% 46.9%;
+
+    /* Chart colors */
+    --chart-principal: 217 91% 60%;
+    --chart-interest: 45 93% 47%;
+    --chart-taxes: 142 76% 36%;
+    --chart-insurance: 262 83% 58%;
+    --chart-pmi: 0 84.2% 60.2%;
+
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, hsl(217 91% 60%), hsl(217 91% 45%));
+    --gradient-success: linear-gradient(135deg, hsl(142 76% 36%), hsl(142 76% 28%));
+    --gradient-background: linear-gradient(180deg, hsl(210 40% 98%), hsl(220 15% 95%));
+
+    /* Shadows */
+    --shadow-card: 0 4px 6px -1px hsl(217 91% 60% / 0.1), 0 2px 4px -1px hsl(217 91% 60% / 0.06);
+    --shadow-elevated: 0 10px 15px -3px hsl(217 91% 60% / 0.1), 0 4px 6px -2px hsl(217 91% 60% / 0.05);
+
+    --radius: 0.5rem;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    background: var(--gradient-background);
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  .calculator-card {
+    @apply bg-card border border-border rounded-lg p-6;
+    box-shadow: var(--shadow-card);
+  }
+
+  .calculator-tab {
+    @apply px-4 py-2 rounded-lg font-medium transition-all duration-200;
+  }
+
+  .calculator-tab.active {
+    background: var(--gradient-primary);
+    @apply text-primary-foreground;
+  }
+
+  .calculator-tab:not(.active) {
+    @apply text-muted-foreground hover:text-foreground hover:bg-secondary;
+  }
+
+  .financial-input {
+    @apply w-full px-3 py-2 border border-input rounded-md bg-background text-sm;
+    transition: all 0.2s ease;
+  }
+
+  .financial-input:focus {
+    @apply ring-2 ring-ring ring-offset-2 outline-none;
+  }
+
+  .payment-breakdown {
+    @apply grid gap-4 p-4 bg-secondary/50 rounded-lg;
+  }
+
+  .metric-card {
+    @apply p-4 bg-card rounded-lg border border-border;
+    box-shadow: var(--shadow-card);
+  }
+}
+
+/* === PIXEL-PERFECT OVERRIDES to match shawnrlloyd.com/mortgage-calculator === */
+@layer base {
+  :root {
+    --sl-navy: 222 15% 12%;
+    --sl-panel: 225 14% 16%;
+    --sl-input: 220 10% 22%;
+    --sl-input-border: 220 7% 28%;
+    --sl-text: 210 40% 98%;
+    --sl-muted: 215 14% 63%;
+    --sl-blue: 216 100% 52%;
+    --sl-green: 140 70% 45%;
+    --sl-rose: 350 84% 65%;
+    --sl-amber: 38 92% 55%;
+    --sl-border: 216 20% 90%;
+    --sl-card: 0 0% 100%;
+  }
+}
+
+@layer components {
+  .calc-page { @apply mx-auto max-w-[1800px]; }
+  .calc-tabs { @apply mt-4 mb-6 flex flex-wrap items-center gap-2 text-[15px] font-medium; }
+  .calc-tab { @apply px-3 py-2 rounded-md text-neutral-700 hover:bg-neutral-100; }
+  .calc-tab--active { @apply text-black bg-neutral-100; box-shadow: inset 0 -2px 0 hsl(var(--ring)); }
+  .calc-grid { @apply grid gap-6; grid-template-columns: 330px 1fr 1fr; }
+  .max-w-7xl { max-width: 100%!important; }
+  .calc-sidebar {
+    background: hsl(var(--sl-panel));
+    color: hsl(var(--sl-text));
+    border-radius: 18px;
+    box-shadow: 0 20px 40px rgba(0,0,0,.25);
+    padding: 20px;
+  }
+  .calc-sidebar .financial-input { background: hsl(var(--sl-input)); border-color: hsl(var(--sl-input-border)); color: hsl(var(--sl-text)); height: 44px; }
+  .calc-sidebar .financial-input::placeholder { color: hsl(var(--sl-muted)); }
+  .calc-sidebar .btn-quote { @apply w-full h-11 rounded-md font-semibold; background: hsl(var(--sl-blue)); color: white; }
+
+  .calc-card { @apply bg-white rounded-xl border; border-color: hsl(var(--sl-border)); box-shadow: 0 6px 18px rgba(33, 37, 41, 0.06); }
+  .calc-card__body { @apply p-5; }
+
+  .pill-row { @apply grid gap-4; grid-template-columns: repeat(4, minmax(0,1fr)); }
+  .pill { @apply rounded-xl px-4 py-3 text-sm font-semibold; border: 1px solid hsl(var(--sl-border)); background: hsl(var(--secondary)); }
+  .pill--good { background: hsl(var(--success)); color: white; }
+  .pill--warn { background: hsl(var(--warning)); color: black; }
+  .pill--bad  { background: hsl(var(--destructive)); color: white; }
+
+  .chart-principal { color: hsl(38 92% 55%); }
+  .chart-taxes     { color: hsl(34 96% 64%); }
+  .chart-insurance { color: hsl(350 84% 65%); }
+  .chart-hoa       { color: hsl(214 95% 68%); }
+  .chart-pmi       { color: hsl(140 70% 45%); }
+}
+/* end of file */
+/* --- Pixel-match helpers for Affordability right column --- */
+.kpi-tile{
+  background: hsl(var(--primary));
+  color:#fff;
+  padding:16px;
+  border-radius:12px;
+  box-shadow:0 6px 18px rgba(33,37,41,.12);
+}
+.kpi-alt{ background: hsl(var(--primary-dark)); }
+.kpi-label{ font-size:12px; opacity:.9; }
+.kpi-value{ font-size:26px; font-weight:700; line-height:1.2; }
+
+.white-pane{
+  background:#fff;
+  border:1px solid hsl(var(--sl-border, 216 20% 90%));
+  border-radius:12px;
+  padding:18px;
+}
+.summary-box{
+  background:#f3f9ff;
+  border:2px solid hsl(var(--primary));
+  border-radius:12px;
+  padding:18px;
+}
+/* ===== Pixel-perfect sidebar form ===== */
+.fs-panel         { background:#1b2230; color:#ecf2ff; border-radius:22px; box-shadow:0 24px 48px rgba(0,0,0,.28); padding:22px; }
+.fs-title         { font-size:22px; font-weight:700; letter-spacing:.2px; margin:2px 0 10px; }
+.fs-tabs .tab     { font-size:13px; padding:8px 10px; border-radius:8px; color:#d8e0f3; }
+.fs-tabs .tab[data-state="active"]{ background:#2a3243; color:#fff; }
+
+/* field */
+.fs-field         { display:grid; gap:6px; }
+.fs-grid2         { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.fs-label         { font-size:13px; font-weight:600; color:#cad3e6; letter-spacing:.01em; display:flex; align-items:center; gap:6px; }
+.fs-sublabel      { display:block; font-size:12px; font-weight:500; color:#9fb0cc; margin-top:2px; }
+
+/* input */
+.fs-input, .fs-select, .fs-readonly {
+  height:46px; border-radius:10px;
+  background:#222a3a; border:1px solid #343d52; color:#f2f6ff;
+  padding:0 12px;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+}
+.fs-input::placeholder{ color:#9fb0cc; }
+.fs-readonly{ display:flex; align-items:center; }
+
+/* compact icon pill for Estimated/Live */
+.fs-pill         { display:inline-flex; align-items:center; gap:6px; height:22px; padding:0 8px;
+                   border-radius:999px; font-size:11px; font-weight:600; }
+.fs-pill--warn   { background:#ffecb5; color:#664d03; border:1px solid #ffe69c; }
+.fs-pill--ok     { background:#d1f5e1; color:#0f5132; border:1px solid #a3e4c5; }
+
+/* segmented Year/Month */
+.fs-segment      { display:inline-grid; grid-auto-flow:column; gap:0; background:#222a3a; border:1px solid #343d52; border-radius:10px; padding:2px; height:46px; }
+.fs-segbtn       { padding:0 14px; border-radius:8px; color:#d8e0f3; font-weight:600; font-size:13px; display:grid; place-items:center; }
+.fs-segbtn[aria-pressed="true"]{ background:#2a3243; color:#fff; }
+
+/* numeric suffix % box inside grid */
+.fs-suffix       { display:flex; align-items:center; justify-content:center; width:44px; height:46px;
+                   background:#222a3a; border:1px solid #343d52; border-radius:10px; color:#cbd5ea; font-weight:700; }
+
+/* CTA */
+.fs-cta          { height:48px; border-radius:10px; font-weight:700; background:#2b66ff; color:#fff; border:none; }
+.fs-cta:hover    { background:#2558db; }
+
+/* Fixed height for all big tabs; USDA shrinks naturally */
+.fs-fixed { height: 760px; display: flex; flex-direction: column; }
+
+/* Scroll body area; USDA will be shorter since we don't add fs-fixed on its panel */
+.fs-body{
+  overflow-y: auto;
+  padding-right: 4px;
+  max-height: calc(760px - 110px); /* leave space for title + tabs + CTA; tweak if needed */
+}
+
+/* Optional nicer scrollbar (WebKit) */
+.fs-body::-webkit-scrollbar{ width: 8px; }
+.fs-body::-webkit-scrollbar-thumb{ background:#2a3243; border-radius:8px; }
+.fs-body:hover::-webkit-scrollbar-thumb{ background:#3a4256; }
+/* === Purchase page layout helpers (NEW) === */
+.purchase-grid { display:grid; gap:24px; max-width:1800px; margin:0 auto; }
+.purchase-main { display:flex; flex-direction:column; gap:16px; }
+.purchase-right { display:flex; flex-direction:column; gap:16px; }
+
+.years-strip{
+  display:grid!important; gap:16px;
+  padding:14px 18px;
+  border:1px solid hsl(var(--sl-border,216 20% 90%));
+  border-radius:12px;
+  background:#fff;
+  box-shadow:0 6px 18px rgba(33,37,41,.06);
+}
+/* === KPI Strips (NEW) === */
+.pc-strip{
+  display:flex; gap:16px;
+  justify-content:space-around;
+  padding:14px 18px;
+  border:1px solid hsl(var(--sl-border,216 20% 90%));
+  border-radius:12px;
+  background:#fff;
+  box-shadow:0 6px 18px rgba(33,37,41,.06);
+}
+.pc-strip--green{ background:#eaf7ef; }
+.pc-strip--rose{  background:#fdecef; }
+
+.pc-strip__item{ display:flex; flex-direction:column; }
+.pc-strip__label{ font-size:14px; color:#6b7280; }      /* neutral-500 */
+.pc-strip__value{ font-size:18px; font-weight:600; color:#0f172a; } /* slate-900 */
+
+/* === Cards used in middle & right columns (NEW) === */
+.pc-card{
+  background:#fff;
+  border:1px solid hsl(var(--sl-border,216 20% 90%));
+  border-radius:12px;
+  box-shadow:0 6px 18px rgba(33,37,41,.06);
+}
+.pc-card__header{ display:flex; align-items:center; justify-content:space-between; padding:16px 20px 8px; }
+.pc-card__title{ font-size:18px; font-weight:600; }
+.pc-info{ display:inline-flex; align-items:center; color:#9ca3af; } /* neutral-400 */
+.pc-card__body{ padding:20px; }
+
+/* Key/value rows inside details (NEW) */
+.pc-row{ display:flex; align-items:center; justify-content:space-between; }
+.pc-key{ color:#6b7280; }     /* neutral-500 */
+.pc-val{ font-weight:600; }
+
+/* Inputs & pills inside right cards (NEW) */
+.pc-field-label{ font-size:14px; font-weight:600; margin-bottom:8px; }
+.pc-input{
+  width:100%; height:42px; border-radius:8px;
+  border:1px solid hsl(var(--sl-border,216 20% 90%));
+  background:#0b0c0f0a; padding:0 12px; font-size:14px;
+}
+.pc-pill-row{ display:flex; gap:8px; }
+.pc-pill{
+  border:1px solid hsl(var(--sl-border,216 20% 90%));
+  background:#f7f9fc; border-radius:10px; padding:8px 14px;
+  font-size:14px; font-weight:600;
+}
+.pc-pill--active{
+  background:hsla(var(--primary),0.12);
+  border-color:hsl(var(--primary));
+}
+/* ===== Refinance page only (layout helpers) ===== */
+.rf-banner{
+  background:#ecfdf5; /* light green to match screenshot */
+  border:1px solid hsl(var(--sl-border,216 20% 90%));
+  border-radius:12px;
+  padding:14px 16px;
+  font-weight:600;
+  text-align:center;
+}
+
+.rf-kpi{
+  background:#effaf1;
+  border:1px solid hsl(var(--sl-border,216 20% 90%));
+  border-radius:12px;
+  padding:16px;
+}
+.rf-kpi__label{ font-size:12px; opacity:.8; margin-bottom:6px; }
+.rf-kpi__value{ font-size:28px; font-weight:800; }
+
+/* bar rows used inside both comparison cards */
+.rf-bar{
+  position:relative;
+  height:22px;
+  border-radius:999px;
+  background:#eef6ee;
+  border:1px solid hsl(var(--sl-border,216 20% 90%));
+  overflow:hidden;
+}
+.rf-bar__fill{
+  height:100%;
+}
+.rf-bar__value{
+  position:absolute; right:8px; top:50%;
+  transform:translateY(-50%);
+  font-size:12px; font-weight:700;
+}
+/* === Rent vs Buy – RIGHT SIDE ONLY (center/right styles) === */
+.rvb-kpi{
+  background: hsl(var(--secondary)/0.6);
+  border:1px solid hsl(var(--border));
+  border-radius:14px;
+  padding:14px 16px;
+}
+.rvb-kpi__label{ font-size:12px; font-weight:700; letter-spacing:.04em; opacity:.7; margin-bottom:6px; }
+.rvb-kpi__value{ font-size:28px; font-weight:800; }
+
+.rvb-note{
+  background: hsl(var(--secondary)/0.45);
+  border:1px solid hsl(var(--border));
+  border-radius:16px;
+  padding:14px 16px;
+}
+.rvb-note__title{ font-weight:700; margin-bottom:6px; }
+.rvb-note__body{ font-size:14px; line-height:1.5; }
+
+.rvb-row{ display:grid; grid-template-columns: 1fr 1fr 1fr; align-items:center; padding:8px 0; }
+.rvb-row--em{ border-top:1px solid hsl(var(--border)); padding-top:12px; }
+.rvb-row__label{ color: hsl(var(--muted-foreground)); font-size:14px; }
+.rvb-row__val{ font-weight:600; font-size:14px; }
+
+.rvb-bar{
+  position:relative; height:18px; border-radius:999px;
+  background: hsl(var(--secondary)/0.5); overflow:hidden;
+}
+.rvb-bar--buy{ background: hsl(var(--secondary)/0.45); }
+.rvb-bar__fill{ position:absolute; inset:0 auto 0 0; height:100%;
+  background: hsl(142 76% 36% / .85);
+}
+.rvb-bar__val{ position:absolute; right:10px; top:50%; transform:translateY(-50%);
+  font-size:12px; font-weight:700;
+}
+
+.rvb-slider{ position:relative; display:grid; align-items:center; }
+.rvb-slider input[type=range]{ width:100%; }
+.rvb-slider__bubble{
+  position:absolute; top:-22px; left:0;
+  transform:translateX(calc((var(--v,0) * 1%) - 12px));
+  font-size:12px; font-weight:800; background:hsl(var(--primary)/.12);
+  border:1px solid hsl(var(--border));
+  padding:2px 6px; border-radius:6px;
+}
+
+/* ===== VA Refinance page only ===== */
+.va-refi-banner{
+  background:#ecfdf5; /* light green tint */
+  border:1px solid #d1fae5;
+  color:#065f46;
+  padding:16px 18px;
+  border-radius:10px;
+  font-weight:600;
+  text-align:center;
+}
+
+.va-refi-kpi{
+  background:#f0fdf4;
+  border:1px solid #dcfce7;
+  border-radius:12px;
+  padding:18px 16px;
+}
+.va-refi-kpi__label{ font-size:12px; color:#0f766e; }
+.va-refi-kpi__value{ font-size:28px; line-height:1.1; font-weight:700; color:#065f46; margin-top:6px; }
+
+.va-refi-card{
+  border:1px solid #eafaf0;
+  background:#ffffff;
+}
+.va-refi-card__header{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 16px;
+  border-bottom:1px solid #eef6ef;
+}
+.va-refi-card__title{ font-size:16px; font-weight:700; }
+.va-refi-card__body{ padding:16px; }
+
+.va-row{
+  display:flex; align-items:center; justify-content:space-between;
+  font-size:14px;
+}
+.va-row__label{ color:#374151; }
+.va-row__val{ font-weight:700; color:#0b3d2e; }
+
+.va-bar{
+  margin-top:8px;
+  height:14px;
+  background:#f1f5f9;
+  border-radius:10px;
+  overflow:hidden;
+  display:flex;
+}
+.va-bar__fill{ height:100%; }
+.va-bar__fill--dark{ background:#1f2937; }        /* dark slate */
+.va-bar__fill--light{ background:#e5e7eb; flex:1; }/* light slate remainder */
+.va-bar__fill--pink{ background:#fde2e2; }        /* soft pink for "increase" bars */
+.va-bar__fill--green{ background:#86efac; }       /* soft green */
+
+.va-radio{ display:grid; gap:10px; }
+.va-radio__btn{
+  display:flex; align-items:center; gap:10px;
+  width:100%;
+  border-radius:10px;
+  padding:12px 14px;
+  background:#1f2937;
+  border:1px solid #374151;
+  color:#e5e7eb;
+  text-align:left;
+}
+.va-radio__btn.is-active{
+  background:#111827;
+  border-color:#10b981;
+}
+.va-dot{
+  width:10px; height:10px; border-radius:999px;
+  border:2px solid #9ca3af; background:transparent;
+}
+.va-radio__btn.is-active .va-dot{ border-color:#10b981; background:#10b981; }
+
+/* tiny helper from your existing styles to show a circled ? */
+.fs-i{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:16px; height:16px; margin-left:6px;
+  border-radius:50%;
+  border:1px solid #cbd5e1; color:#64748b; font-size:11px;
+}
+/* ===== DSCR visual polish ===== */
+.dscr-kpi{
+  border-radius:14px;
+  padding:18px 16px;
+  text-align:center;
+  border:1px solid #e6f5ea;
+}
+.dscr-kpi__label{ font-size:12px; color:#0f766e; }
+.dscr-kpi__value{ margin-top:6px; font-weight:800; font-size:28px; line-height:1.1; }
+.dscr-kpi--green{ background:#ecfdf5; border-color:#d1fae5; color:#065f46; }
+.dscr-kpi--red{ background:#fee2e2; border-color:#fecaca; color:#991b1b; }
+
+.dscr-card{ border:1px solid #eafaf0; height:auto;}
+.dscr-card__header{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 16px; border-bottom:1px solid #eef6ef;
+}
+.dscr-card__title{ font-weight:700; font-size:16px; }
+.dscr-card__body{ padding:16px; }
+.dscr-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px 24px; }
+
+.ds-row{ display:flex; align-items:center; justify-content:space-between; font-size:14px; }
+.ds-row > span{ color:#374151; }
+.ds-row > b{ color:#0b3d2e; font-weight:700; }
+.ds-row > b.ok{ color:#065f46; }
+.ds-row > b.bad{ color:#b91c1c; }
+
+/* Return Metrics accordion (dropdown rows) */
+.rm-item{
+  border:1px solid #eafaf0; border-radius:12px; overflow:hidden; background:#f9fefb;
+}
+.rm-head{
+  width:100%; display:flex; align-items:center; justify-content:space-between;
+  padding:12px 14px; font-weight:600;
+}
+.rm-val{ display:flex; align-items:center; gap:6px; }
+.rm-val.ok{ color:#0f766e; }
+.rm-val.bad{ color:#b91c1c; }
+.rm-body{ padding:12px 14px; border-top:1px solid #eafaf0; color:#374151; font-size:13px; background:#ffffff; }
+.rm-chevron{ transition: transform .18s ease; }
+.rm-chevron.open{ transform: rotate(180deg); }
+/* KPI tiles */
+.dscr-kpi{
+  border-radius:14px;
+  padding:18px 16px;
+  text-align:center;
+  border:1px solid #e6f5ea;
+  background:#ecfdf5;
+}
+.dscr-kpi__label{ font-size:12px; color:#0f766e; }
+.dscr-kpi__value{ margin-top:6px; font-weight:800; font-size:28px; line-height:1.1; }
+.dscr-kpi--green{ background:#ecfdf5; border-color:#d1fae5; }
+
+/* Cards */
+.dscr-card{ border:1px solid #eafaf0; }
+.dscr-card__header{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:14px 16px; border-bottom:1px solid #eef6ef;
+}
+.dscr-card__title{ font-weight:700; font-size:16px; }
+.dscr-card__body{ padding:16px; }
+.dscr-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px 24px; }
+
+.ds-row{ display:flex; align-items:center; justify-content:space-between; font-size:14px; }
+.ds-row > span{ color:#374151; }
+.ds-row > b{ color:#0b3d2e; font-weight:700; }
