@@ -5,9 +5,10 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Label } from "recharts";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as ReTooltip, Label } from "recharts";
 import { RefreshCw, Info } from "lucide-react";
 import { useMortgageRates } from "@/hooks/useMortgageRates";
+import { Tooltip as UiTooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 
 type ProgramId = "conventional" | "fha" | "va" | "usda" | "jumbo";
 type Mode = "amount" | "percent";
@@ -53,6 +54,22 @@ function renderCenterMonthlyLabel(totalMonthly: number) {
     );
   };
 }
+
+/** ---- HOISTED: stable segmented control (no remounts) ---- */
+const Seg = ({
+  value, onChange, left, right, className = "",
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  left: string;
+  right: string;
+  className?: string;
+}) => (
+  <div className={`fs-segment ${className}`}>
+    <button type="button" className="fs-segbtn" aria-pressed={value === left} onClick={() => onChange(left)}>{left}</button>
+    <button type="button" className="fs-segbtn" aria-pressed={value === right} onClick={() => onChange(right)}>{right}</button>
+  </div>
+);
 
 export const AffordabilityCalculator = () => {
   const { rates, loading: ratesLoading, error: ratesError, refreshRates } = useMortgageRates();
@@ -204,502 +221,53 @@ export const AffordabilityCalculator = () => {
     ...(program === "conventional" ? [{ name: "PMI", value: monthlyPMI, color: "#10b981" as const }] : []),
   ].filter(x => x.value > 0);
 
-  // Segmented helper
-  const Seg = ({
-    value, onChange, left, right, className = "",
-  }: { value: string; onChange: (v: string) => void; left: string; right: string; className?: string }) => (
-    <div className={`fs-segment ${className}`}>
-      <button type="button" className="fs-segbtn" aria-pressed={value === left} onClick={() => onChange(left)}>{left}</button>
-      <button type="button" className="fs-segbtn" aria-pressed={value === right} onClick={() => onChange(right)}>{right}</button>
-    </div>
-  );
+  // Typing helper (kept if you want to extend later)
+  const [isTyping, setIsTyping] = useState(false);
 
-  // ---------- LEFT SIDEBAR FIELDS (by program) ----------
-  const SidebarFields = () => {
-    // Shared first three rows
-    const Row1_3 = (
-      <>
-        {/* Row 1 */}
-        <div className="fs-grid2">
-          <div className="fs-field">
-            <label className="fs-label">Gross Income (Monthly)</label>
-            <Input
-              type="text"
-              inputMode="decimal"
-              value={grossIncome}
-              onChange={(e)=>setGrossIncome(e.target.value)}
-              className="fs-input"
-            />
-          </div>
-          <div className="fs-field">
-            <label className="fs-label">
-              Monthly Debts
-              <span title={DEBTS_TOOLTIP} className="inline-flex items-center text-[#9fb0cc]"><Info className="h-4 w-4 ml-1" /></span>
-            </label>
-            <Input
-              type="text"
-              inputMode="decimal"
-              value={monthlyDebts}
-              onChange={(e)=>setMonthlyDebts(e.target.value)}
-              className="fs-input"
-            />
-          </div>
-        </div>
+  // ===== Helpers for $ ↔ % toggles (convert current value to new representation) =====
+  const toFixedStr = (n: number, digits = 2) =>
+    Number.isFinite(n) ? String(Number(n.toFixed(digits))) : "0";
 
-        {/* Row 2 */}
-        <div className="fs-grid2 mt-4">
-          <div className="fs-field">
-            <label className="fs-label">{program === "va" ? "Home Value" : "Home Price"}</label>
-            <Input
-              type="text"
-              inputMode="decimal"
-              value={homePrice}
-              onChange={(e)=>setHomePrice(e.target.value)}
-              className="fs-input"
-            />
-          </div>
-
-          <div className="fs-field">
-            <label className="fs-label">Down Payment</label>
-            <div className="grid grid-cols-[1fr_auto] gap-2">
-              <Input
-                type="text"
-                inputMode="decimal"
-                value={downValue}
-                onChange={(e)=>setDownValue(e.target.value)}
-                className="fs-input"
-              />
-              <Seg
-                value={downMode === "percent" ? "%" : "$"}
-                onChange={(v)=> setDownMode(v === "%" ? "percent" : "amount")}
-                left="$"
-                right="%"
-                className="w-[100px]"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Row 3 */}
-        <div className="fs-grid2 mt-4">
-          <div className="fs-field">
-            <label className="fs-label">{program === "va" ? "Base Mortgage Amount" : "Loan Amount"}</label>
-            <div className="fs-readonly">
-              {baseLoanAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-            </div>
-          </div>
-
-          <div className="fs-field">
-            <label className="fs-label">{program === "va" ? "Loan Terms" : "Loan Term"}</label>
-            <div className="grid grid-cols-[1fr_auto] gap-2">
-              {termMode === "years" ? (
-                <Input
-                  type="text"
-                  inputMode="numeric"
-                  value={loanTermYears}
-                  onChange={(e)=>{ const v = e.target.value; setLoanTermYears(v); setLoanTermMonths(String(Math.max(0, Math.round(toNum(v) * 12)))); }}
-                  className="fs-input"
-                />
-              ) : (
-                <Input
-                  type="text"
-                  inputMode="numeric"
-                  value={loanTermMonths}
-                  onChange={(e)=>{ const v = e.target.value; setLoanTermMonths(v); setLoanTermYears(String(Math.max(0, Math.round(toNum(v) / 12)))); }}
-                  className="fs-input"
-                />
-              )}
-              <Seg
-                value={termMode === "years" ? "Year" : "Month"}
-                onChange={(v)=> setTermMode(v === "Year" ? "years" : "months")}
-                left="Year"
-                right="Month"
-                className="w-[160px]"
-              />
-            </div>
-          </div>
-        </div>
-      </>
-    );
-
-    if (program === "usda") {
-      return (
-        <>
-          {Row1_3}
-
-          {/* Row 4 (Prop Tax / HOI) */}
-          <div className="fs-grid2 mt-4">
-            <div className="fs-field">
-              <label className="fs-label">Prop Tax <span className="fs-sublabel">(Yearly)</span></label>
-              <div className="grid grid-cols-[1fr_auto] gap-2">
-                <Input
-                  type="text"
-                  inputMode="decimal"
-                  value={propTaxValue}
-                  onChange={(e)=>setPropTaxValue(e.target.value)}
-                  className="fs-input"
-                />
-                <Seg value={propTaxMode === "percent" ? "%" : "$"} onChange={(v)=> setPropTaxMode(v === "%" ? "percent" : "amount")} left="$" right="%" className="w-[100px]" />
-              </div>
-            </div>
-            <div className="fs-field">
-              <label className="fs-label">Homeowners Insurance <span className="fs-sublabel">(Yearly)</span></label>
-              <div className="grid grid-cols-[1fr_auto] gap-2">
-                <Input
-                  type="text"
-                  inputMode="decimal"
-                  value={insValue}
-                  onChange={(e)=>setInsValue(e.target.value)}
-                  className="fs-input"
-                />
-                <Seg value={insMode === "amount" ? "$" : "%"} onChange={(v)=> setInsMode(v === "$" ? "amount" : "percent")} left="$" right="%" className="w-[100px]" />
-              </div>
-            </div>
-          </div>
-
-          {/* Row 5 (Interest Rate / HOA) */}
-          <div className="fs-grid2 mt-4">
-            <div className="fs-field">
-              <label className="fs-label">
-                Interest Rate
-                <span className="fs-pill fs-pill--warn ml-2">Estimated</span>
-              </label>
-              <div className="flex items-center gap-2">
-                <Input
-                  type="text"
-                  inputMode="decimal"
-                  value={interestRate}
-                  onChange={(e)=>setInterestRate(e.target.value)}
-                  className="fs-input"
-                />
-                <Button onClick={refreshRates} disabled={ratesLoading} className={`${buttonVariants({ size: "icon", variant: "ghost" })} h-9 w-9 text-white/90`}>
-                  <RefreshCw className={`h-4 w-4 ${ratesLoading ? "animate-spin" : ""}`} />
-                </Button>
-              </div>
-            </div>
-            <div className="fs-field">
-              <label className="fs-label">HOA Dues <span className="fs-sublabel">(Monthly)</span></label>
-              <Input
-                type="text"
-                inputMode="decimal"
-                value={hoaDues}
-                onChange={(e)=>setHoaDues(e.target.value)}
-                className="fs-input"
-              />
-            </div>
-          </div>
-        </>
-      );
+  // Down Payment: % is percent of homePrice; $ is absolute amount
+  function toggleDownMode(to: Mode) {
+    if (to === "percent") {
+      const pct = homePriceN ? (toNum(downValue) / homePriceN) * 100 : 0;
+      setDownValue(toFixedStr(pct, 2));
+      setDownMode("percent");
+    } else {
+      const amt = Math.round((toNum(downValue) / 100) * homePriceN);
+      setDownValue(String(amt));
+      setDownMode("amount");
     }
+  }
 
-    if (program === "fha") {
-      return (
-        <>
-          {Row1_3}
-          <div className="fs-grid2 mt-4">
-            <div className="fs-field">
-              <label className="fs-label">Prop Tax <span className="fs-sublabel">(Yearly)</span></label>
-              <div className="grid grid-cols-[1fr_auto] gap-2">
-                <Input
-                  type="text"
-                  inputMode="decimal"
-                  value={propTaxValue}
-                  onChange={(e)=>setPropTaxValue(e.target.value)}
-                  className="fs-input"
-                />
-                <Seg value={propTaxMode === "percent" ? "%" : "$"} onChange={(v)=> setPropTaxMode(v === "%" ? "percent" : "amount")} left="$" right="%" className="w-[100px]" />
-              </div>
-            </div>
-            <div className="fs-field">
-              <label className="fs-label">Homeowners Insurance <span className="fs-sublabel">(Yearly)</span></label>
-              <div className="grid grid-cols-[1fr_auto] gap-2">
-                <Input
-                  type="text"
-                  inputMode="decimal"
-                  value={insValue}
-                  onChange={(e)=>setInsValue(e.target.value)}
-                  className="fs-input"
-                />
-                <Seg value={insMode === "amount" ? "$" : "%"} onChange={(v)=> setInsMode(v === "$" ? "amount" : "percent")} left="$" right="%" className="w-[100px]" />
-              </div>
-            </div>
-          </div>
-          <div className="fs-grid2 mt-4">
-            <div className="fs-field">
-              <label className="fs-label">Interest Rate <span className="fs-pill fs-pill--warn ml-2">Estimated</span></label>
-              <div className="flex items-center gap-2">
-                <Input
-                  type="text"
-                  inputMode="decimal"
-                  value={interestRate}
-                  onChange={(e)=>setInterestRate(e.target.value)}
-                  className="fs-input"
-                />
-                <Button onClick={refreshRates} disabled={ratesLoading} className={`${buttonVariants({ size: "icon", variant: "ghost" })} h-9 w-9 text-white/90`}>
-                  <RefreshCw className={`h-4 w-4 ${ratesLoading ? "animate-spin" : ""}`} />
-                </Button>
-              </div>
-            </div>
-            <div className="fs-field">
-              <label className="fs-label">HOA Dues <span className="fs-sublabel">(Monthly)</span></label>
-              <Input
-                type="text"
-                inputMode="decimal"
-                value={hoaDues}
-                onChange={(e)=>setHoaDues(e.target.value)}
-                className="fs-input"
-              />
-            </div>
-          </div>
-          <div className="fs-grid2 mt-4">
-            <div className="fs-field">
-              <label className="fs-label">Upfront MIP (%)</label>
-              <Input
-                type="text"
-                inputMode="decimal"
-                value={upfrontMIPPct}
-                onChange={(e)=>setUpfrontMIPPct(e.target.value)}
-                className="fs-input"
-              />
-            </div>
-            <div className="fs-field">
-              <label className="fs-label">Annual MIP (%)</label>
-              <Input
-                type="text"
-                inputMode="decimal"
-                value={annualMIPPct}
-                onChange={(e)=>setAnnualMIPPct(e.target.value)}
-                className="fs-input"
-              />
-            </div>
-          </div>
-          <div className="fs-grid2 mt-4">
-            <div className="fs-field">
-              <label className="fs-label">Annual FHA Duration (Years)</label>
-              <Input
-                type="text"
-                inputMode="numeric"
-                value={fhaDurationYears}
-                onChange={(e)=>setFhaDurationYears(e.target.value)}
-                className="fs-input"
-              />
-            </div>
-            <div />
-          </div>
-        </>
-      );
+  // Property Tax: % of homePrice (yearly) vs absolute yearly $
+  function togglePropTaxMode(to: Mode) {
+    if (to === "percent") {
+      const pct = homePriceN ? (propTaxValueN / homePriceN) * 100 : 0;
+      setPropTaxValue(toFixedStr(pct, 3));
+      setPropTaxMode("percent");
+    } else {
+      const amt = Math.round((propTaxValueN / 100) * homePriceN);
+      setPropTaxValue(String(amt));
+      setPropTaxMode("amount");
     }
+  }
 
-    if (program === "va") {
-      return (
-        <>
-          {Row1_3}
-          <div className="fs-grid2 mt-4">
-            <div className="fs-field">
-              <label className="fs-label">Payment Frequency</label>
-              <div className="fs-segment w-full" style={{ padding: 4 }}>
-                <button type="button" className="fs-segbtn" aria-pressed={payFreq === "year"} onClick={()=>setPayFreq("year")}>Year</button>
-                <button type="button" className="fs-segbtn" aria-pressed={payFreq === "month"} onClick={()=>setPayFreq("month")}>Month</button>
-              </div>
-            </div>
-            <div className="fs-field">
-              <label className="fs-label">Interest Rate <span className="fs-pill fs-pill--warn ml-2">Estimated</span></label>
-              <div className="flex items-center gap-2">
-                <Input
-                  type="text"
-                  inputMode="decimal"
-                  value={interestRate}
-                  onChange={(e)=>setInterestRate(e.target.value)}
-                  className="fs-input"
-                />
-                <Button onClick={refreshRates} disabled={ratesLoading} className={`${buttonVariants({ size: "icon", variant: "ghost" })} h-9 w-9 text-white/90`}>
-                  <RefreshCw className={`h-4 w-4 ${ratesLoading ? "animate-spin" : ""}`} />
-                </Button>
-              </div>
-            </div>
-          </div>
-          <div className="fs-grid2 mt-4">
-            <div className="fs-field">
-              <label className="fs-label">This is my...</label>
-              <Select
-                value={vaUseType}
-                onValueChange={(v)=>{
-                  setVaUseType(v);
-                  if (v === "first") setVaFundingFeePct("2.15");
-                  if (v === "subsequent") setVaFundingFeePct("3.30");
-                  if (v === "waived") setVaFundingFeePct("0");
-                }}
-              >
-                <SelectTrigger className="fs-select"><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="first">First Time Use of a VA Loan</SelectItem>
-                  <SelectItem value="subsequent">Subsequent Use of a VA Loan</SelectItem>
-                  <SelectItem value="waived">Disabled Veteran (Funding Fee Waived)</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="fs-field">
-              <label className="fs-label">VA Funding Fee (%)</label>
-              <Input
-                type="text"
-                inputMode="decimal"
-                value={vaFundingFeePct}
-                onChange={(e)=>setVaFundingFeePct(e.target.value)}
-                className="fs-input"
-              />
-            </div>
-          </div>
-          <div className="fs-grid2 mt-4">
-            <div className="fs-field">
-              <label className="fs-label">Property Tax <span className="fs-sublabel">(Yearly)</span></label>
-              <div className="grid grid-cols-[1fr_auto] gap-2">
-                <Input
-                  type="text"
-                  inputMode="decimal"
-                  value={propTaxValue}
-                  onChange={(e)=>setPropTaxValue(e.target.value)}
-                  className="fs-input"
-                />
-                <Seg value={propTaxMode === "percent" ? "%" : "$"} onChange={(v)=> setPropTaxMode(v === "%" ? "percent" : "amount")} left="$" right="%" className="w-[100px]" />
-              </div>
-            </div>
-            <div className="fs-field">
-              <label className="fs-label">Homeowners Insurance (Yearly)</label>
-              <div className="grid grid-cols-[1fr_auto] gap-2">
-                <Input
-                  type="text"
-                  inputMode="decimal"
-                  value={insValue}
-                  onChange={(e)=>setInsValue(e.target.value)}
-                  className="fs-input"
-                />
-                <Seg value={insMode === "amount" ? "$" : "%"} onChange={(v)=> setInsMode(v === "$" ? "amount" : "percent")} left="$" right="%" className="w-[100px]" />
-              </div>
-            </div>
-          </div>
-          <div className="fs-grid2 mt-4">
-            <div className="fs-field">
-              <label className="fs-label">Final Mortgage Amount</label>
-              <div className="fs-readonly">
-                {(vaFinalMortgageAmount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-              </div>
-            </div>
-            <div className="fs-field">
-              <label className="fs-label">HOA Dues <span className="fs-sublabel">(Monthly)</span></label>
-              <Input
-                type="text"
-                inputMode="decimal"
-                value={hoaDues}
-                onChange={(e)=>setHoaDues(e.target.value)}
-                className="fs-input"
-              />
-            </div>
-          </div>
-          <div className="fs-grid2 mt-4">
-            <div className="fs-field">
-              <label className="fs-label">First Payment Date</label>
-              <Input
-                type="date"
-                value={firstPaymentDate}
-                onChange={(e)=>setFirstPaymentDate(e.target.value)}
-                className="fs-input"
-              />
-            </div>
-            <div />
-          </div>
-        </>
-      );
+  // Homeowners Insurance: % of homePrice (yearly) vs absolute yearly $
+  function toggleInsMode(to: Mode) {
+    if (to === "percent") {
+      const pct = homePriceN ? (insValueN / homePriceN) * 100 : 0;
+      setInsValue(toFixedStr(pct, 3));
+      setInsMode("percent");
+    } else {
+      const amt = Math.round((insValueN / 100) * homePriceN);
+      setInsValue(String(amt));
+      setInsMode("amount");
     }
+  }
 
-    // Conventional (baseline)
-    return (
-      <>
-        {Row1_3}
-        <div className="fs-grid2 mt-4">
-          <div className="fs-field">
-            <label className="fs-label">
-              Interest Rate
-              {ratesError ? (<span className="fs-pill fs-pill--warn ml-2">Estimated</span>) : (<span className="fs-pill fs-pill--ok ml-2">Live Rate</span>)}
-            </label>
-            <div className="flex items-center gap-2">
-              <Input
-                type="text"
-                inputMode="decimal"
-                value={interestRate}
-                onChange={(e)=>setInterestRate(e.target.value)}
-                className="fs-input"
-              />
-              <Button onClick={refreshRates} disabled={ratesLoading} className={`${buttonVariants({ size: "icon", variant: "ghost" })} h-9 w-9 text-white/90`}>
-                <RefreshCw className={`h-4 w-4 ${ratesLoading ? "animate-spin" : ""}`} />
-              </Button>
-            </div>
-          </div>
-          <div className="fs-field">
-            <label className="fs-label">Credit Score</label>
-            <Select value={creditScore} onValueChange={setCreditScore}>
-              <SelectTrigger className="fs-select"><SelectValue /></SelectTrigger>
-              <SelectContent>
-                {["620-639","640-659","660-679","680-699","700-719","720+"].map(cs =>
-                  <SelectItem key={cs} value={cs}>{cs}</SelectItem>
-                )}
-              </SelectContent>
-            </Select>
-          </div>
-        </div>
-        <div className="fs-grid2 mt-4">
-          <div className="fs-field">
-            <label className="fs-label">Prop Tax <span className="fs-sublabel">(Yearly)</span></label>
-            <div className="grid grid-cols-[1fr_auto] gap-2">
-              <Input
-                type="text"
-                inputMode="decimal"
-                value={propTaxValue}
-                onChange={(e)=>setPropTaxValue(e.target.value)}
-                className="fs-input"
-              />
-              <Seg value={propTaxMode === "percent" ? "%" : "$"} onChange={(v)=> setPropTaxMode(v === "%" ? "percent" : "amount")} left="$" right="%" className="w-[100px]" />
-            </div>
-          </div>
-          <div className="fs-field">
-            <label className="fs-label">Homeowners Insurance <span className="fs-sublabel">(Yearly)</span></label>
-            <div className="grid grid-cols-[1fr_auto] gap-2">
-              <Input
-                type="text"
-                inputMode="decimal"
-                value={insValue}
-                onChange={(e)=>setInsValue(e.target.value)}
-                className="fs-input"
-              />
-              <Seg value={insMode === "amount" ? "$" : "%"} onChange={(v)=> setInsMode(v === "$" ? "amount" : "percent")} left="$" right="%" className="w-[100px]" />
-            </div>
-          </div>
-        </div>
-        <div className="fs-grid2 mt-4">
-          <div className="fs-field">
-            <label className="fs-label">PMI <span className="fs-sublabel">(Yearly)</span></label>
-            <Input
-              type="text"
-              inputMode="decimal"
-              value={pmiYearly}
-              onChange={(e)=>setPMIYearly(e.target.value)}
-              className="fs-input"
-            />
-          </div>
-          <div className="fs-field">
-            <label className="fs-label">HOA Dues <span className="fs-sublabel">(Monthly)</span></label>
-            <Input
-              type="text"
-              inputMode="decimal"
-              value={hoaDues}
-              onChange={(e)=>setHoaDues(e.target.value)}
-              className="fs-input"
-            />
-          </div>
-        </div>
-      </>
-    );
-  };
-
+  // ---- UI ----
   const loanAmountTile =
     program === "fha"  ? fhaFinancedLoanAmount :
     program === "va"   ? vaFinalMortgageAmount :
@@ -707,7 +275,7 @@ export const AffordabilityCalculator = () => {
     baseLoanAmount;
 
   return (
-    <div className="grid gap-6" style={{ gridTemplateColumns: "550px 1fr 400px" }}>
+    <div className="grid gap-6" style={{ gridTemplateColumns: "500px 1fr 480px" }}>
       {/* LEFT */}
       <div className={`fs-panel ${program === "usda" ? "" : "fs-fixed"}`}>
         <h2 className="fs-title">Affordability Calculator</h2>
@@ -722,23 +290,573 @@ export const AffordabilityCalculator = () => {
         </Tabs>
 
         <div className="fs-body mt-2">
-          <SidebarFields />
+          {/* ==== INLINED SIDEBAR (no nested component = no remounts) ==== */}
+
+          {/* Row 1 */}
+          <div className="fs-grid2">
+            <div className="fs-field">
+              <label className="fs-label">Gross Income (Monthly)</label>
+              <Input
+                type="number"
+                inputMode="decimal"
+                value={grossIncome}
+                onFocus={() => setIsTyping(true)}
+                onBlur={() => setIsTyping(false)}
+                onChange={(e)=>setGrossIncome(e.target.value)}
+                className="fs-input no-arrows"
+              />
+            </div>
+            <div className="fs-field">
+              <label className="fs-label">
+                Monthly Debts
+                <UiTooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="What counts as monthly debts?"
+                      className="inline-flex items-center ml-1 text-[#9fb0cc] hover:text-white focus:outline-none"
+                    >
+                      <Info className="h-4 w-4" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent
+                    side="right"
+                    align="start"
+                    sideOffset={8}
+                    className="p-0 bg-transparent border-0 shadow-none"
+                  >
+                    <div className="relative w-72 rounded-xl bg-[#44C264] text-white p-4">
+                      <span className="absolute -left-1.5 top-4 h-3 w-3 rotate-45 bg-[#44C264]" />
+                      <div className="font-semibold mb-1">Monthly Debts</div>
+                      <p className="text-sm leading-5">
+                        Monthly Debt includes the payments you make each month on auto loans,
+                        and credit cards (minimum payment) and student loans. Exclude Rent and
+                        Utilities.
+                      </p>
+                    </div>
+                  </TooltipContent>
+                </UiTooltip>
+              </label>
+              <Input
+                type="number"
+                inputMode="decimal"
+                value={monthlyDebts}
+                onFocus={() => setIsTyping(true)}
+                onBlur={() => setIsTyping(false)}
+                onChange={(e)=>setMonthlyDebts(e.target.value)}
+                className="fs-input no-arrows"
+              />
+            </div>
+          </div>
+
+          {/* Row 2 */}
+          <div className="fs-grid2 mt-4">
+            <div className="fs-field">
+              <label className="fs-label">{program === "va" ? "Home Value" : "Home Price"}</label>
+              <Input
+                type="number"
+                inputMode="decimal"
+                value={homePrice}
+                onFocus={() => setIsTyping(true)}
+                onBlur={() => setIsTyping(false)}
+                onChange={(e)=>setHomePrice(e.target.value)}
+                className="fs-input no-arrows"
+              />
+            </div>
+
+            <div className="fs-field">
+              <label className="fs-label">Down Payment</label>
+              <div className="grid grid-cols-[1fr_auto] gap-2">
+                <Input
+                  type="number"
+                  inputMode="decimal"
+                  value={downValue}
+                  onFocus={() => setIsTyping(true)}
+                  onBlur={() => setIsTyping(false)}
+                  onChange={(e)=>setDownValue(e.target.value)}
+                  className="fs-input no-arrows"
+                />
+                <Seg
+                  value={downMode === "percent" ? "%" : "$"}
+                  onChange={(v)=> toggleDownMode(v === "%" ? "percent" : "amount")}
+                  left="$"
+                  right="%"
+                  className="w-[100px]"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Row 3 */}
+          <div className="fs-grid2 mt-4">
+            <div className="fs-field">
+              <label className="fs-label">{program === "va" ? "Base Mortgage Amount" : "Loan Amount"}</label>
+              <div className="fs-readonly">
+                {baseLoanAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+              </div>
+            </div>
+
+            <div className="fs-field">
+              <label className="fs-label">{program === "va" ? "Loan Terms" : "Loan Term"}</label>
+              <div className="grid grid-cols-[1fr_auto] gap-2">
+                {termMode === "years" ? (
+                  <Input
+                    type="number"
+                    inputMode="numeric"
+                    value={loanTermYears}
+                    onFocus={() => setIsTyping(true)}
+                    onBlur={() => setIsTyping(false)}
+                    onChange={(e)=>{ const v = e.target.value; setLoanTermYears(v); setLoanTermMonths(String(Math.max(0, Math.round(toNum(v) * 12)))); }}
+                    className="fs-input no-arrows"
+                  />
+                ) : (
+                  <Input
+                    type="number"
+                    inputMode="numeric"
+                    value={loanTermMonths}
+                    onFocus={() => setIsTyping(true)}
+                    onBlur={() => setIsTyping(false)}
+                    onChange={(e)=>{ const v = e.target.value; setLoanTermMonths(v); setLoanTermYears(String(Math.max(0, Math.round(toNum(v) / 12)))); }}
+                    className="fs-input no-arrows"
+                  />
+                )}
+                <Seg
+                  value={termMode === "years" ? "Year" : "Month"}
+                  onChange={(v)=> setTermMode(v === "Year" ? "years" : "months")}
+                  left="Year"
+                  right="Month"
+                  className="w-[160px]"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Program-specific blocks */}
+          {program === "usda" && (
+            <>
+              {/* Row 4 (Prop Tax / HOI) */}
+              <div className="fs-grid2 mt-4">
+                <div className="fs-field">
+                  <label className="fs-label">Prop Tax <span className="fs-sublabel">(Yearly)</span></label>
+                  <div className="grid grid-cols-[1fr_auto] gap-2">
+                    <Input
+                      type="number"
+                      inputMode="decimal"
+                      value={propTaxValue}
+                      onFocus={() => setIsTyping(true)}
+                      onBlur={() => setIsTyping(false)}
+                      onChange={(e)=>setPropTaxValue(e.target.value)}
+                      className="fs-input no-arrows"
+                    />
+                    <Seg value={propTaxMode === "percent" ? "%" : "$"} onChange={(v)=> togglePropTaxMode(v === "%" ? "percent" : "amount")} left="$" right="%" className="w-[100px]" />
+                  </div>
+                </div>
+                <div className="fs-field">
+                  <label className="fs-label">Homeowners Insurance <span className="fs-sublabel">(Yearly)</span></label>
+                  <div className="grid grid-cols-[1fr_auto] gap-2">
+                    <Input
+                      type="number"
+                      inputMode="decimal"
+                      value={insValue}
+                      onFocus={() => setIsTyping(true)}
+                      onBlur={() => setIsTyping(false)}
+                      onChange={(e)=>setInsValue(e.target.value)}
+                      className="fs-input no-arrows"
+                    />
+                    <Seg value={insMode === "amount" ? "$" : "%"} onChange={(v)=> toggleInsMode(v === "$" ? "amount" : "percent")} left="$" right="%" className="w-[100px]" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Row 5 (Interest Rate / HOA) */}
+              <div className="fs-grid2 mt-4">
+                <div className="fs-field">
+                  <label className="fs-label">
+                    Interest Rate
+                    <span className="fs-pill fs-pill--warn ml-2">Estimated</span>
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="number"
+                      inputMode="decimal"
+                      value={interestRate}
+                      onFocus={() => setIsTyping(true)}
+                      onBlur={() => setIsTyping(false)}
+                      onChange={(e)=>setInterestRate(e.target.value)}
+                      className="fs-input no-arrows"
+                    />
+                    <Button onClick={refreshRates} disabled={ratesLoading} className={`${buttonVariants({ size: "icon", variant: "ghost" })} h-9 w-9 text-white/90`}>
+                      <RefreshCw className={`h-4 w-4 ${ratesLoading ? "animate-spin" : ""}`} />
+                    </Button>
+                  </div>
+                </div>
+                <div className="fs-field">
+                  <label className="fs-label">HOA Dues <span className="fs-sublabel">(Monthly)</span></label>
+                  <Input
+                    type="number"
+                    inputMode="decimal"
+                    value={hoaDues}
+                    onFocus={() => setIsTyping(true)}
+                    onBlur={() => setIsTyping(false)}
+                    onChange={(e)=>setHoaDues(e.target.value)}
+                    className="fs-input no-arrows"
+                  />
+                </div>
+              </div>
+            </>
+          )}
+
+          {program === "fha" && (
+            <>
+              <div className="fs-grid2 mt-4">
+                <div className="fs-field">
+                  <label className="fs-label">Prop Tax <span className="fs-sublabel">(Yearly)</span></label>
+                  <div className="grid grid-cols-[1fr_auto] gap-2">
+                    <Input
+                      type="number"
+                      inputMode="decimal"
+                      value={propTaxValue}
+                      onFocus={() => setIsTyping(true)}
+                      onBlur={() => setIsTyping(false)}
+                      onChange={(e)=>setPropTaxValue(e.target.value)}
+                      className="fs-input no-arrows"
+                    />
+                    <Seg value={propTaxMode === "percent" ? "%" : "$"} onChange={(v)=> togglePropTaxMode(v === "%" ? "percent" : "amount")} left="$" right="%" className="w-[100px]" />
+                  </div>
+                </div>
+                <div className="fs-field">
+                  <label className="fs-label">Homeowners Insurance <span className="fs-sublabel">(Yearly)</span></label>
+                  <div className="grid grid-cols-[1fr_auto] gap-2">
+                    <Input
+                      type="number"
+                      inputMode="decimal"
+                      value={insValue}
+                      onFocus={() => setIsTyping(true)}
+                      onBlur={() => setIsTyping(false)}
+                      onChange={(e)=>setInsValue(e.target.value)}
+                      className="fs-input no-arrows"
+                    />
+                    <Seg value={insMode === "amount" ? "$" : "%"} onChange={(v)=> toggleInsMode(v === "$" ? "amount" : "percent")} left="$" right="%" className="w-[100px]" />
+                  </div>
+                </div>
+              </div>
+              <div className="fs-grid2 mt-4">
+                <div className="fs-field">
+                  <label className="fs-label">Interest Rate <span className="fs-pill fs-pill--warn ml-2">Estimated</span></label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="number"
+                      inputMode="decimal"
+                      value={interestRate}
+                      onFocus={() => setIsTyping(true)}
+                      onBlur={() => setIsTyping(false)}
+                      onChange={(e)=>setInterestRate(e.target.value)}
+                      className="fs-input no-arrows"
+                    />
+                    <Button onClick={refreshRates} disabled={ratesLoading} className={`${buttonVariants({ size: "icon", variant: "ghost" })} h-9 w-9 text-white/90`}>
+                      <RefreshCw className={`h-4 w-4 ${ratesLoading ? "animate-spin" : ""}`} />
+                    </Button>
+                  </div>
+                </div>
+                <div className="fs-field">
+                  <label className="fs-label">HOA Dues <span className="fs-sublabel">(Monthly)</span></label>
+                  <Input
+                    type="number"
+                    inputMode="decimal"
+                    value={hoaDues}
+                    onFocus={() => setIsTyping(true)}
+                    onBlur={() => setIsTyping(false)}
+                    onChange={(e)=>setHoaDues(e.target.value)}
+                    className="fs-input no-arrows"
+                  />
+                </div>
+              </div>
+              <div className="fs-grid2 mt-4">
+                <div className="fs-field">
+                  <label className="fs-label">Upfront MIP (%)</label>
+                  <Input
+                    type="number"
+                    inputMode="decimal"
+                    value={upfrontMIPPct}
+                    onFocus={() => setIsTyping(true)}
+                    onBlur={() => setIsTyping(false)}
+                    onChange={(e)=>setUpfrontMIPPct(e.target.value)}
+                    className="fs-input no-arrows"
+                  />
+                </div>
+                <div className="fs-field">
+                  <label className="fs-label">Annual MIP (%)</label>
+                  <Input
+                    type="number"
+                    inputMode="decimal"
+                    value={annualMIPPct}
+                    onFocus={() => setIsTyping(true)}
+                    onBlur={() => setIsTyping(false)}
+                    onChange={(e)=>setAnnualMIPPct(e.target.value)}
+                    className="fs-input no-arrows"
+                  />
+                </div>
+              </div>
+              <div className="fs-grid2 mt-4">
+                <div className="fs-field">
+                  <label className="fs-label">Annual FHA Duration (Years)</label>
+                  <Input
+                    type="number"
+                    inputMode="numeric"
+                    value={fhaDurationYears}
+                    onFocus={() => setIsTyping(true)}
+                    onBlur={() => setIsTyping(false)}
+                    onChange={(e)=>setFhaDurationYears(e.target.value)}
+                    className="fs-input no-arrows"
+                  />
+                </div>
+                <div />
+              </div>
+            </>
+          )}
+
+          {program === "va" && (
+            <>
+              <div className="fs-grid2 mt-4">
+                <div className="fs-field">
+                  <label className="fs-label">Payment Frequency</label>
+                  <div className="fs-segment w-full" style={{ padding: 4 }}>
+                    <button type="button" className="fs-segbtn" aria-pressed={payFreq === "year"} onClick={()=>setPayFreq("year")}>Year</button>
+                    <button type="button" className="fs-segbtn" aria-pressed={payFreq === "month"} onClick={()=>setPayFreq("month")}>Month</button>
+                  </div>
+                </div>
+                <div className="fs-field">
+                  <label className="fs-label">Interest Rate <span className="fs-pill fs-pill--warn ml-2">Estimated</span></label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="number"
+                      inputMode="decimal"
+                      value={interestRate}
+                      onFocus={() => setIsTyping(true)}
+                      onBlur={() => setIsTyping(false)}
+                      onChange={(e)=>setInterestRate(e.target.value)}
+                      className="fs-input no-arrows"
+                    />
+                    <Button onClick={refreshRates} disabled={ratesLoading} className={`${buttonVariants({ size: "icon", variant: "ghost" })} h-9 w-9 text-white/90`}>
+                      <RefreshCw className={`h-4 w-4 ${ratesLoading ? "animate-spin" : ""}`} />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+              <div className="fs-grid2 mt-4">
+                <div className="fs-field">
+                  <label className="fs-label">This is my...</label>
+                  <Select
+                    value={vaUseType}
+                    onValueChange={(v)=>{
+                      setVaUseType(v);
+                      if (v === "first") setVaFundingFeePct("2.15");
+                      if (v === "subsequent") setVaFundingFeePct("3.30");
+                      if (v === "waived") setVaFundingFeePct("0");
+                    }}
+                  >
+                    <SelectTrigger className="fs-select"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="first">First Time Use of a VA Loan</SelectItem>
+                      <SelectItem value="subsequent">Subsequent Use of a VA Loan</SelectItem>
+                      <SelectItem value="waived">Disabled Veteran (Funding Fee Waived)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="fs-field">
+                  <label className="fs-label">VA Funding Fee (%)</label>
+                  <Input
+                    type="number"
+                    inputMode="decimal"
+                    value={vaFundingFeePct}
+                    onFocus={() => setIsTyping(true)}
+                    onBlur={() => setIsTyping(false)}
+                    onChange={(e)=>setVaFundingFeePct(e.target.value)}
+                    className="fs-input no-arrows"
+                  />
+                </div>
+              </div>
+              <div className="fs-grid2 mt-4">
+                <div className="fs-field">
+                  <label className="fs-label">Property Tax <span className="fs-sublabel">(Yearly)</span></label>
+                  <div className="grid grid-cols-[1fr_auto] gap-2">
+                    <Input
+                      type="number"
+                      inputMode="decimal"
+                      value={propTaxValue}
+                      onFocus={() => setIsTyping(true)}
+                      onBlur={() => setIsTyping(false)}
+                      onChange={(e)=>setPropTaxValue(e.target.value)}
+                      className="fs-input no-arrows"
+                    />
+                    <Seg value={propTaxMode === "percent" ? "%" : "$"} onChange={(v)=> togglePropTaxMode(v === "%" ? "percent" : "amount")} left="$" right="%" className="w-[100px]" />
+                  </div>
+                </div>
+                <div className="fs-field">
+                  <label className="fs-label">Homeowners Insurance (Yearly)</label>
+                  <div className="grid grid-cols-[1fr_auto] gap-2">
+                    <Input
+                      type="number"
+                      inputMode="decimal"
+                      value={insValue}
+                      onFocus={() => setIsTyping(true)}
+                      onBlur={() => setIsTyping(false)}
+                      onChange={(e)=>setInsValue(e.target.value)}
+                      className="fs-input no-arrows"
+                    />
+                    <Seg value={insMode === "amount" ? "$" : "%"} onChange={(v)=> toggleInsMode(v === "$" ? "amount" : "percent")} left="$" right="%" className="w-[100px]" />
+                  </div>
+                </div>
+              </div>
+              <div className="fs-grid2 mt-4">
+                <div className="fs-field">
+                  <label className="fs-label">Final Mortgage Amount</label>
+                  <div className="fs-readonly">
+                    {(vaFinalMortgageAmount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                  </div>
+                </div>
+                <div className="fs-field">
+                  <label className="fs-label">HOA Dues <span className="fs-sublabel">(Monthly)</span></label>
+                  <Input
+                    type="number"
+                    inputMode="decimal"
+                    value={hoaDues}
+                    onFocus={() => setIsTyping(true)}
+                    onBlur={() => setIsTyping(false)}
+                    onChange={(e)=>setHoaDues(e.target.value)}
+                    className="fs-input no-arrows"
+                  />
+                </div>
+              </div>
+              <div className="fs-grid2 mt-4">
+                <div className="fs-field">
+                  <label className="fs-label">First Payment Date</label>
+                  <Input
+                    type="date"
+                    value={firstPaymentDate}
+                    onFocus={() => setIsTyping(true)}
+                    onBlur={() => setIsTyping(false)}
+                    onChange={(e)=>setFirstPaymentDate(e.target.value)}
+                    className="fs-input no-arrows"
+                  />
+                </div>
+                <div />
+              </div>
+            </>
+          )}
+
+          {program !== "usda" && program !== "fha" && program !== "va" && (
+            <>
+              <div className="fs-grid2 mt-4">
+                <div className="fs-field">
+                  <label className="fs-label">
+                    Interest Rate
+                    {ratesError ? (<span className="fs-pill fs-pill--warn ml-2">Estimated</span>) : (<span className="fs-pill fs-pill--ok ml-2">Live Rate</span>)}
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="number"
+                      inputMode="decimal"
+                      value={interestRate}
+                      onFocus={() => setIsTyping(true)}
+                      onBlur={() => setIsTyping(false)}
+                      onChange={(e)=>setInterestRate(e.target.value)}
+                      className="fs-input no-arrows"
+                    />
+                    <Button onClick={refreshRates} disabled={ratesLoading} className={`${buttonVariants({ size: "icon", variant: "ghost" })} h-9 w-9 text-white/90`}>
+                      <RefreshCw className={`h-4 w-4 ${ratesLoading ? "animate-spin" : ""}`} />
+                    </Button>
+                  </div>
+                </div>
+                <div className="fs-field">
+                  <label className="fs-label">Credit Score</label>
+                  <Select value={creditScore} onValueChange={setCreditScore}>
+                    <SelectTrigger className="fs-select"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      {["620-639","640-659","660-679","680-699","700-719","720+"].map(cs =>
+                        <SelectItem key={cs} value={cs}>{cs}</SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="fs-grid2 mt-4">
+                <div className="fs-field">
+                  <label className="fs-label">Prop Tax <span className="fs-sublabel">(Yearly)</span></label>
+                  <div className="grid grid-cols-[1fr_auto] gap-2">
+                    <Input
+                      type="number"
+                      inputMode="decimal"
+                      value={propTaxValue}
+                      onFocus={() => setIsTyping(true)}
+                      onBlur={() => setIsTyping(false)}
+                      onChange={(e)=>setPropTaxValue(e.target.value)}
+                      className="fs-input no-arrows"
+                    />
+                    <Seg value={propTaxMode === "percent" ? "%" : "$"} onChange={(v)=> togglePropTaxMode(v === "%" ? "percent" : "amount")} left="$" right="%" className="w-[100px]" />
+                  </div>
+                </div>
+                <div className="fs-field">
+                  <label className="fs-label">Homeowners Insurance <span className="fs-sublabel">(Yearly)</span></label>
+                  <div className="grid grid-cols-[1fr_auto] gap-2">
+                    <Input
+                      type="number"
+                      inputMode="decimal"
+                      value={insValue}
+                      onFocus={() => setIsTyping(true)}
+                      onBlur={() => setIsTyping(false)}
+                      onChange={(e)=>setInsValue(e.target.value)}
+                      className="fs-input no-arrows"
+                    />
+                    <Seg value={insMode === "amount" ? "$" : "%"} onChange={(v)=> toggleInsMode(v === "$" ? "amount" : "percent")} left="$" right="%" className="w-[100px]" />
+                  </div>
+                </div>
+              </div>
+              <div className="fs-grid2 mt-4">
+                <div className="fs-field">
+                  <label className="fs-label">PMI <span className="fs-sublabel">(Yearly)</span></label>
+                  <Input
+                    type="number"
+                    inputMode="decimal"
+                    value={pmiYearly}
+                    onFocus={() => setIsTyping(true)}
+                    onBlur={() => setIsTyping(false)}
+                    onChange={(e)=>setPMIYearly(e.target.value)}
+                    className="fs-input no-arrows"
+                  />
+                </div>
+                <div className="fs-field">
+                  <label className="fs-label">HOA Dues <span className="fs-sublabel">(Monthly)</span></label>
+                  <Input
+                    type="number"
+                    inputMode="decimal"
+                    value={hoaDues}
+                    onFocus={() => setIsTyping(true)}
+                    onBlur={() => setIsTyping(false)}
+                    onChange={(e)=>setHoaDues(e.target.value)}
+                    className="fs-input no-arrows"
+                  />
+                </div>
+              </div>
+            </>
+          )}
+
           <button className="fs-cta mt-5 w-full">GET A QUOTE</button>
         </div>
       </div>
 
       {/* MIDDLE */}
-      <div className="grid gap-4">
-        <Card className="rounded-[14px]">
+      <div className="flex flex-col gap-4">
+        <Card className="rounded-[14px] h-[300px]">
           <CardHeader className="pb-2">
             <CardTitle className="text-[18px]">Payment Breakdown</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="h-64">
+            <div className="flex flex-row gap-6">
+              <div className="h-64 flex items-center justify-center">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
-                    <Tooltip formatter={(v)=>`$${Number(v).toLocaleString(undefined,{maximumFractionDigits:2})}`} />
+                    <ReTooltip formatter={(v)=>`$${Number(v).toLocaleString(undefined,{maximumFractionDigits:2})}`} />
                     <Pie
                       data={paymentBreakdown}
                       dataKey="value"
@@ -758,7 +876,7 @@ export const AffordabilityCalculator = () => {
                 </ResponsiveContainer>
               </div>
 
-              <div className="space-y-3">
+              <div className="space-y-3 flex flex-col justify-center">
                 {paymentBreakdown.map((item) => (
                   <div key={item.name} className="flex items-center justify-between text-sm">
                     <div className="flex items-center gap-2">
@@ -773,7 +891,7 @@ export const AffordabilityCalculator = () => {
           </CardContent>
         </Card>
 
-        <Card className="rounded-[14px]">
+        <Card className="rounded-[14px] h-[300px]">
           <CardHeader className="pb-2">
             <CardTitle className="text-[18px]">Loan Details</CardTitle>
           </CardHeader>
@@ -798,6 +916,12 @@ export const AffordabilityCalculator = () => {
                   <>
                     <div className="mt-4 text-neutral-500 text-sm">Monthly USDA MIP:</div>
                     <div className="text-[18px] font-semibold">${monthlyUSDAFee.toLocaleString(undefined, { maximumFractionDigits: 2 })}</div>
+                  </>
+                )}
+                {program === "conventional" && monthlyPMI > 0 && (
+                  <>
+                    <div className="mt-4 text-neutral-500 text-sm">Monthly Estimated PMI:</div>
+                    <div className="text-[18px] font-semibold">${monthlyPMI.toLocaleString(undefined, { maximumFractionDigits: 2 })}</div>
                   </>
                 )}
               </div>
@@ -848,14 +972,9 @@ export const AffordabilityCalculator = () => {
             <div className="kpi-label">Monthly Mortgage Payment</div>
             <div className="kpi-value">${monthlyPI.toLocaleString(undefined, { maximumFractionDigits: 2 })}</div>
           </div>
-          <div className="kpi-tile kpi-alt">
+        <div className="kpi-tile kpi-alt">
             <div className="kpi-label">Loan Amount</div>
-            <div className="kpi-value">${(
-              program === "fha"  ? fhaFinancedLoanAmount :
-              program === "va"   ? vaFinalMortgageAmount :
-              program === "usda" ? usdaFinancedLoanAmount :
-              baseLoanAmount
-            ).toLocaleString(undefined, { maximumFractionDigits: 2 })}</div>
+            <div className="kpi-value">${loanAmountTile.toLocaleString(undefined, { maximumFractionDigits: 2 })}</div>
           </div>
         </div>
 

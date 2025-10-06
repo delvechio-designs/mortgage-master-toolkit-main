@@ -88,7 +88,7 @@
   }
 
   .financial-input {
-    @apply w-full px-3 py-2 border border-input rounded-md bg-background text-sm;
+    @apply w-full px-3 py-2 border  rounded-md bg-background text-sm;
     transition: all 0.2s ease;
   }
 
@@ -138,7 +138,7 @@
     box-shadow: 0 20px 40px rgba(0,0,0,.25);
     padding: 20px;
   }
-  .calc-sidebar .financial-input { background: hsl(var(--sl-input)); border-color: hsl(var(--sl-input-border)); color: hsl(var(--sl-text)); height: 44px; }
+  .calc-sidebar .financial-input { background: hsl(var(--sl-input));  color: hsl(var(--sl-text)); height: 44px; }
   .calc-sidebar .financial-input::placeholder { color: hsl(var(--sl-muted)); }
   .calc-sidebar .btn-quote { @apply w-full h-11 rounded-md font-semibold; background: hsl(var(--sl-blue)); color: white; }
 
@@ -183,26 +183,36 @@
   padding:18px;
 }
 /* ===== Pixel-perfect sidebar form ===== */
-.fs-panel         { background:#1b2230; color:#ecf2ff; border-radius:22px; box-shadow:0 24px 48px rgba(0,0,0,.28); padding:22px; }
+.fs-panel         { background:#282828; color:#ecf2ff; border-radius:22px;  padding:22px; }
 .fs-title         { font-size:22px; font-weight:700; letter-spacing:.2px; margin:2px 0 10px; }
-.fs-tabs .tab     { font-size:13px; padding:8px 10px; border-radius:8px; color:#d8e0f3; }
-.fs-tabs .tab[data-state="active"]{ background:#2a3243; color:#fff; }
-
+.fs-tabs .tab     { font-size:13px; padding:8px 10px; border-radius:0; color:#71737A;  margin-bottom: -10px;}
+.fs-tabs .tab[data-state="active"]{ background:transparent; color:#fff; border-bottom: 2px solid #E59C29; border-radius: 0; }
+.fs-tabs { border-bottom: 2px solid #71737A; margin-bottom: 20px; }
 /* field */
 .fs-field         { display:grid; gap:6px; }
-.fs-grid2         { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.fs-grid2         { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-left: 5px; margin-right: 5px; }
 .fs-label         { font-size:13px; font-weight:600; color:#cad3e6; letter-spacing:.01em; display:flex; align-items:center; gap:6px; }
 .fs-sublabel      { display:block; font-size:12px; font-weight:500; color:#9fb0cc; margin-top:2px; }
 
 /* input */
 .fs-input, .fs-select, .fs-readonly {
   height:46px; border-radius:10px;
-  background:#222a3a; border:1px solid #343d52; color:#f2f6ff;
+  background:rgba(255,255,255,.1); 
+  color:#f2f6ff;
   padding:0 12px;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+  
 }
 .fs-input::placeholder{ color:#9fb0cc; }
 .fs-readonly{ display:flex; align-items:center; }
+.no-arrows::-webkit-outer-spin-button,
+.no-arrows::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.no-arrows[type="number"] {
+  -moz-appearance: textfield;
+}
 
 /* compact icon pill for Estimated/Live */
 .fs-pill         { display:inline-flex; align-items:center; gap:6px; height:22px; padding:0 8px;
@@ -211,17 +221,17 @@
 .fs-pill--ok     { background:#d1f5e1; color:#0f5132; border:1px solid #a3e4c5; }
 
 /* segmented Year/Month */
-.fs-segment      { display:inline-grid; grid-auto-flow:column; gap:0; background:#222a3a; border:1px solid #343d52; border-radius:10px; padding:2px; height:46px; }
-.fs-segbtn       { padding:0 14px; border-radius:8px; color:#d8e0f3; font-weight:600; font-size:13px; display:grid; place-items:center; }
-.fs-segbtn[aria-pressed="true"]{ background:#2a3243; color:#fff; }
+.fs-segment      { display:inline-grid; grid-auto-flow:column; gap:0; background:rgba(255,255,255,.3); border-radius:10px; padding:2px; height:46px; }
+.fs-segbtn       { padding:0 14px; border-radius:8px; color:rgba(255,255,255,.8); font-weight:700; font-size:13px; display:grid; place-items:center; }
+.fs-segbtn[aria-pressed="true"]{ background:rgba(255,255,255,.5); color:#282828; font-weight:700; }
 
 /* numeric suffix % box inside grid */
 .fs-suffix       { display:flex; align-items:center; justify-content:center; width:44px; height:46px;
                    background:#222a3a; border:1px solid #343d52; border-radius:10px; color:#cbd5ea; font-weight:700; }
 
 /* CTA */
-.fs-cta          { height:48px; border-radius:10px; font-weight:700; background:#2b66ff; color:#fff; border:none; }
-.fs-cta:hover    { background:#2558db; }
+.fs-cta          { height:48px; border-radius:10px; font-weight:700; background:#E59C29; color:#0F2C4C; border:none; }
+.fs-cta:hover    { background:#a16f1d; }
 
 /* Fixed height for all big tabs; USDA shrinks naturally */
 .fs-fixed { height: 760px; display: flex; flex-direction: column; }
