@@ -212,13 +212,13 @@ export const AffordabilityCalculator = () => {
 
   // Donut data
   const paymentBreakdown = [
-    { name: "Principal & Interest", value: monthlyPI,          color: "#f39c12" },
-    { name: "Taxes",                value: monthlyPropertyTax, color: "#2ecc71" },
-    { name: "Insurance",            value: monthlyInsurance,   color: "#e91e63" },
+    { name: "Principal & Interest", value: monthlyPI,          color: "#FA9D39" },
+    { name: "Taxes",                value: monthlyPropertyTax, color: "#59C2C0" },
+    { name: "Insurance",            value: monthlyInsurance,   color: "#F85A85" },
     ...(program === "fha"  ? [{ name: "MIP",       value: monthlyMIP,      color: "#f1c40f" as const }] : []),
     ...(program === "usda" ? [{ name: "USDA MIP",  value: monthlyUSDAFee,  color: "#f1c40f" as const }] : []),
-    { name: "HOA Dues",             value: hoaDuesN,           color: "#3b82f6" },
-    ...(program === "conventional" ? [{ name: "PMI", value: monthlyPMI, color: "#10b981" as const }] : []),
+    { name: "HOA Dues",             value: hoaDuesN,           color: "#41A2ED" },
+    ...(program === "conventional" ? [{ name: "PMI", value: monthlyPMI, color: "#EEEE22" as const }] : []),
   ].filter(x => x.value > 0);
 
   // Typing helper (kept if you want to extend later)
@@ -275,7 +275,7 @@ export const AffordabilityCalculator = () => {
     baseLoanAmount;
 
   return (
-    <div className="grid gap-6" style={{ gridTemplateColumns: "500px 1fr 480px" }}>
+    <div className="grid gap-6" style={{ gridTemplateColumns: "500px 1fr 450px" }}>
       {/* LEFT */}
       <div className={`fs-panel ${program === "usda" ? "" : "fs-fixed"}`}>
         <h2 className="fs-title">Affordability Calculator</h2>
@@ -847,13 +847,13 @@ export const AffordabilityCalculator = () => {
 
       {/* MIDDLE */}
       <div className="flex flex-col gap-4">
-        <Card className="rounded-[14px] h-[300px]">
+        <Card className="rounded-[14px] h-[280px]">
           <CardHeader className="pb-2">
             <CardTitle className="text-[18px]">Payment Breakdown</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex flex-row gap-6">
-              <div className="h-64 flex items-center justify-center">
+              <div className="h-48 w-[200px] flex flex-row items-center justify-center">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <ReTooltip formatter={(v)=>`$${Number(v).toLocaleString(undefined,{maximumFractionDigits:2})}`} />
@@ -881,9 +881,9 @@ export const AffordabilityCalculator = () => {
                   <div key={item.name} className="flex items-center justify-between text-sm">
                     <div className="flex items-center gap-2">
                       <span className="inline-block h-3 w-3 rounded-full" style={{ background: item.color }} />
-                      <span>{item.name}</span>
+                      <span style={{ fontWeight: "bold", fontSize: "13px" }}>{item.name}</span>
                     </div>
-                    <span>${item.value.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                    <span style={{ color: "#6C8971", fontWeight: "bold", marginLeft: "10px" }}>${item.value.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
                   </div>
                 ))}
               </div>
@@ -891,7 +891,7 @@ export const AffordabilityCalculator = () => {
           </CardContent>
         </Card>
 
-        <Card className="rounded-[14px] h-[300px]">
+        <Card className="rounded-[14px] h-[auto]">
           <CardHeader className="pb-2">
             <CardTitle className="text-[18px]">Loan Details</CardTitle>
           </CardHeader>
@@ -899,64 +899,64 @@ export const AffordabilityCalculator = () => {
             <div className="grid grid-cols-2 gap-6">
               <div>
                 <div className="text-neutral-500 text-sm">Home Value:</div>
-                <div className="text-[18px] font-semibold">${homePriceN.toLocaleString()}</div>
+                <div className="text-[18px] font-semibold mt-2">${homePriceN.toLocaleString()}</div>
 
                 <div className="mt-4 text-neutral-500 text-sm">
                   {program === "fha" ? "Monthly FHA Payment:" : program === "va" ? "Monthly VA Payment:" : program === "usda" ? "Monthly USDA Payment:" : "Monthly Conventional Payment:"}
                 </div>
-                <div className="text-[18px] font-semibold">${monthlyPI.toLocaleString(undefined, { maximumFractionDigits: 2 })}</div>
+                <div className="text-[18px] font-semibold mt-2">${monthlyPI.toLocaleString(undefined, { maximumFractionDigits: 2 })}</div>
 
                 {program === "fha" && (
                   <>
                     <div className="mt-4 text-neutral-500 text-sm">Monthly MIP:</div>
-                    <div className="text-[18px] font-semibold">${monthlyMIP.toLocaleString(undefined, { maximumFractionDigits: 2 })}</div>
+                    <div className="text-[18px] font-semibold mt-2">${monthlyMIP.toLocaleString(undefined, { maximumFractionDigits: 2 })}</div>
                   </>
                 )}
                 {program === "usda" && (
                   <>
                     <div className="mt-4 text-neutral-500 text-sm">Monthly USDA MIP:</div>
-                    <div className="text-[18px] font-semibold">${monthlyUSDAFee.toLocaleString(undefined, { maximumFractionDigits: 2 })}</div>
+                    <div className="text-[18px] font-semibold mt-2">${monthlyUSDAFee.toLocaleString(undefined, { maximumFractionDigits: 2 })}</div>
                   </>
                 )}
                 {program === "conventional" && monthlyPMI > 0 && (
                   <>
                     <div className="mt-4 text-neutral-500 text-sm">Monthly Estimated PMI:</div>
-                    <div className="text-[18px] font-semibold">${monthlyPMI.toLocaleString(undefined, { maximumFractionDigits: 2 })}</div>
+                    <div className="text-[18px] font-semibold mt-2">${monthlyPMI.toLocaleString(undefined, { maximumFractionDigits: 2 })}</div>
                   </>
                 )}
               </div>
 
               <div>
                 <div className="text-neutral-500 text-sm">Base Loan Amount:</div>
-                <div className="text-[18px] font-semibold">${baseLoanAmount.toLocaleString(undefined,{maximumFractionDigits:2})}</div>
+                <div className="text-[18px] font-semibold mt-2">${baseLoanAmount.toLocaleString(undefined,{maximumFractionDigits:2})}</div>
 
                 <div className="mt-4 text-neutral-500 text-sm">Down Payment:</div>
-                <div className="text-[18px] font-semibold">${downPayment.toLocaleString()}</div>
+                <div className="text-[18px] font-semibold mt-2">${downPayment.toLocaleString()}</div>
 
                 {program === "fha" && (
                   <>
                     <div className="mt-4 text-neutral-500 text-sm">Upfront MIP:</div>
-                    <div className="text-[18px] font-semibold">${upfrontMIPAmount.toLocaleString(undefined,{maximumFractionDigits:2})}</div>
+                    <div className="text-[18px] font-semibold mt-2">${upfrontMIPAmount.toLocaleString(undefined,{maximumFractionDigits:2})}</div>
                     <div className="mt-4 text-neutral-500 text-sm">FHA Loan Amount:</div>
-                    <div className="text-[18px] font-semibold">${fhaFinancedLoanAmount.toLocaleString(undefined,{maximumFractionDigits:2})}</div>
+                    <div className="text-[18px] font-semibold mt-2">${fhaFinancedLoanAmount.toLocaleString(undefined,{maximumFractionDigits:2})}</div>
                   </>
                 )}
 
                 {program === "va" && (
                   <>
                     <div className="mt-4 text-neutral-500 text-sm">VA Funding Fee:</div>
-                    <div className="text-[18px] font-semibold">${vaFundingFeeAmount.toLocaleString(undefined,{maximumFractionDigits:2})}</div>
+                    <div className="text-[18px] font-semibold mt-2">${vaFundingFeeAmount.toLocaleString(undefined,{maximumFractionDigits:2})}</div>
                     <div className="mt-4 text-neutral-500 text-sm">VA Loan Amount:</div>
-                    <div className="text-[18px] font-semibold">${vaFinalMortgageAmount.toLocaleString(undefined,{maximumFractionDigits:2})}</div>
+                    <div className="text-[18px] font-semibold mt-2">${vaFinalMortgageAmount.toLocaleString(undefined,{maximumFractionDigits:2})}</div>
                   </>
                 )}
 
                 {program === "usda" && (
                   <>
                     <div className="mt-4 text-neutral-500 text-sm">USDA Guarantee Fee:</div>
-                    <div className="text-[18px] font-semibold">${usdaGuaranteeFeeAmount.toLocaleString(undefined,{maximumFractionDigits:2})}</div>
+                    <div className="text-[18px] font-semibold mt-2">${usdaGuaranteeFeeAmount.toLocaleString(undefined,{maximumFractionDigits:2})}</div>
                     <div className="mt-4 text-neutral-500 text-sm">USDA Loan Amount:</div>
-                    <div className="text-[18px] font-semibold">${usdaFinancedLoanAmount.toLocaleString(undefined,{maximumFractionDigits:2})}</div>
+                    <div className="text-[18px] font-semibold mt-2">${usdaFinancedLoanAmount.toLocaleString(undefined,{maximumFractionDigits:2})}</div>
                   </>
                 )}
               </div>
@@ -994,7 +994,7 @@ export const AffordabilityCalculator = () => {
         <div className="white-pane">
           <div className="flex items-center justify-between text-sm font-medium mb-2">
             <span>Purchase Price</span>
-            <span className="text-neutral-500">${homePriceN.toLocaleString()}</span>
+            <span style={{ color: "hsl(var(--primary))", fontWeight: "bold" }}>${homePriceN.toLocaleString()}</span>
           </div>
           <Slider
             value={[homePriceN]}
@@ -1008,7 +1008,7 @@ export const AffordabilityCalculator = () => {
         <div className="white-pane">
           <div className="flex items-center justify-between text-sm font-medium mb-2">
             <span>Down Payment</span>
-            <span className="text-neutral-500">${downPayment.toLocaleString()}</span>
+            <span style={{ color: "hsl(var(--primary))", fontWeight: "bold" }}>${downPayment.toLocaleString()}</span>
           </div>
           <Slider
             value={[downMode === "percent" ? (isFinite(downValueN) ? downValueN : 0) : (homePriceN ? (downValueN / homePriceN) * 100 : 0)]}
@@ -1024,11 +1024,11 @@ export const AffordabilityCalculator = () => {
           <div className="font-bold mb-1">Summary:</div>
           <p className="text-sm leading-6">
             Based on what you input into today your Total Payment would be{" "}
-            <b>${totalMonthlyPayment.toLocaleString(undefined, { maximumFractionDigits: 2 })}</b> on a{" "}
-            <b>{program === "fha" ? "FHA" : program === "va" ? "VA" : program === "usda" ? "USDA" : "Conventional"}</b> Loan with a{" "}
-            <b>{(downPayment / Math.max(1, homePriceN) * 100).toFixed(1)}% Down Payment</b>. Your Debt-to-Income Ratio is{" "}
-            <b>{frontEndDTI.toFixed(2)}%/ {backEndDTI.toFixed(2)}%</b> and the <b>
-              maximum allowable on this program type is {allowableDTI.fe}%/{allowableDTI.be}%</b>.
+            <b style={{ color: "hsl(var(--primary))" }}>${totalMonthlyPayment.toLocaleString(undefined, { maximumFractionDigits: 2 })}</b> on a{" "}
+            <b style={{ color: "hsl(var(--primary))" }}>{program === "fha" ? "FHA" : program === "va" ? "VA" : program === "usda" ? "USDA" : "Conventional"}</b> Loan with a{" "}
+            <b style={{ color: "hsl(var(--primary))" }}>{(downPayment / Math.max(1, homePriceN) * 100).toFixed(1)}% Down Payment</b>. Your Debt-to-Income Ratio is{" "}
+            <b style={{ color: "hsl(var(--primary))" }}>{frontEndDTI.toFixed(2)}%/ {backEndDTI.toFixed(2)}%</b> and the <b style={{ color: "hsl(var(--primary))" }}>
+              maximum allowable on this program type is {allowableDTI.fe}%/{allowableDTI.be}%</b>. Please confirm all these numbers for accuracy with your loan officer. The Monthly Debts Calculation is often where we see errors.
           </p>
         </div>
       </div>
