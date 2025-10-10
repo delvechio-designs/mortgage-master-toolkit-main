@@ -3,7 +3,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Label } from "recharts";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Info } from "lucide-react";
+import { Tooltip as UiTooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 
 /* -------------------------------------------------------
    Helpers
@@ -94,7 +96,7 @@ function amortizeWithExtras(
 ------------------------------------------------------- */
 
 export default function VAPurchaseCalculator() {
-  /* ---------- LEFT PANEL (14 rows) ---------- */
+  /* ---------- LEFT PANEL (VA inputs) ---------- */
 
   // 1. Home Value
   const [homeValue, setHomeValue] = useState<number>(200000);
@@ -103,30 +105,26 @@ export default function VAPurchaseCalculator() {
   const [downMode, setDownMode] = useState<"amount" | "percent">("amount");
   const [downValue, setDownValue] = useState<number>(0);
 
-  // 3. Base Mortgage Amount (derived)
+  // Derived down payment + base loan BEFORE funding fee
   const downPayment = useMemo(
     () => (downMode === "percent" ? (homeValue * (downValue || 0)) / 100 : (downValue || 0)),
     [homeValue, downMode, downValue]
   );
   const baseLoan = Math.max(0, homeValue - downPayment);
 
-  // 4. Loan Terms (Year/Month)
+  // 3. Loan Terms (Year/Month)
   const [termMode, setTermMode] = useState<"years" | "months">("years");
   const [loanYears, setLoanYears] = useState<number>(30);
   const [loanMonths, setLoanMonths] = useState<number>(360);
 
-  // 5. Payment Frequency toggle (Year / Month) — display only
-  const [payFreq, setPayFreq] = useState<"year" | "month">("year");
-
-  // 6. Interest Rate
+  // 4. Interest Rate
   const [rate, setRate] = useState<number>(5);
 
-  // 7. “This is my…” dropdown (simplified VA options)
+  // 5. “This is my…” dropdown (simplified VA options)
   const [vaUse, setVaUse] = useState<"first" | "subsequent" | "exempt">("first");
 
-  // 8. VA Funding Fee (calculated)
+  // 6. VA Funding Fee (calculated)
   const downPct = homeValue > 0 ? (downPayment / homeValue) * 100 : 0;
-  // VA fee table (most common)
   const feeRate = useMemo(() => {
     if (vaUse === "exempt") return 0;
     const bandsFirst = (pct: number) => (pct >= 10 ? 1.25 : pct >= 5 ? 1.5 : 2.15);
@@ -135,25 +133,21 @@ export default function VAPurchaseCalculator() {
   }, [vaUse, downPct]);
   const vaFundingFee = baseLoan * (feeRate / 100);
 
-  // 9. Final Mortgage Amount (derived)
+  // 7. Final Mortgage Amount (derived)
   const finalLoan = Math.max(0, baseLoan + vaFundingFee);
 
-  // 10. Property Tax (Yearly, $/%)
+  // 8. Property Tax (Yearly, $/%)
   const [taxMode, setTaxMode] = useState<"amount" | "percent">("percent");
   const [taxValue, setTaxValue] = useState<number>(0.6); // %
-  const yearlyTax = taxMode === "percent" ? homeValue * (taxValue || 0) / 100 : (taxValue || 0);
-  const monthlyTax = yearlyTax / 12;
 
-  // 11. Homeowners Insurance (Yearly, $/%)
+  // 9. Homeowners Insurance (Yearly, $/%)
   const [insMode, setInsMode] = useState<"amount" | "percent">("amount");
   const [insValue, setInsValue] = useState<number>(1200); // $
-  const yearlyIns = insMode === "amount" ? (insValue || 0) : homeValue * (insValue || 0) / 100;
-  const monthlyIns = yearlyIns / 12;
 
-  // 12. HOA dues per month
+  // 10. HOA dues per month
   const [hoa, setHoa] = useState<number>(0);
 
-  // 13. First Payment Date
+  // 11. First Payment Date
   const [firstPaymentDate, setFirstPaymentDate] = useState<string>(() => {
     const d = new Date();
     const m = String(d.getMonth() + 1).padStart(2, "0");
@@ -161,7 +155,7 @@ export default function VAPurchaseCalculator() {
     return `${d.getFullYear()}-${m}-${day}`;
   });
 
-  // 14. Extra payment per month
+  // 12. Extra payment per month
   const [extraMonthly, setExtraMonthly] = useState<number>(0);
 
   // Early payoff / Lump sum (right sidebar controls)
@@ -177,6 +171,12 @@ export default function VAPurchaseCalculator() {
   const monthlyPI = r
     ? finalLoan * (r * Math.pow(1 + r, n)) / (Math.pow(1 + r, n) - 1)
     : (n > 0 ? finalLoan / n : 0);
+
+  const yearlyTax = taxMode === "percent" ? homeValue * (taxValue || 0) / 100 : (taxValue || 0);
+  const monthlyTax = yearlyTax / 12;
+
+  const yearlyIns = insMode === "amount" ? (insValue || 0) : homeValue * (insValue || 0) / 100;
+  const monthlyIns = yearlyIns / 12;
 
   const totalMonthly = monthlyPI + monthlyTax + monthlyIns + (hoa || 0) + (extraMonthly || 0);
 
@@ -203,7 +203,7 @@ export default function VAPurchaseCalculator() {
     };
   }, [finalLoan, r, monthlyPI, monthlyTax, monthlyIns, hoa, n]);
 
-  /* ---------- Savings / shorten term (pink strip) ---------- */
+  /* ---------- Savings / shorten term (rose strip) ---------- */
 
   const payoffStats = useMemo(() => {
     const freqFactor =
@@ -241,451 +241,541 @@ export default function VAPurchaseCalculator() {
   /* ---------- UI ---------- */
 
   return (
-    <div className="grid gap-6" style={{ gridTemplateColumns: "430px 1fr 430px" }}>
-      {/* LEFT SIDEBAR PANEL */}
-      <div className="fs-panel fs-fixed">
-        <h2 className="fs-title">VA Purchase Calculator</h2>
+    <>
+      {/* OUTER GRID: left sidebar + combined area */}
+      <div className="grid gap-6" style={{ gridTemplateColumns: "500px 1fr" }}>
+        {/* LEFT SIDEBAR PANEL */}
+        <div className="fs-panel fs-fixed">
+          <h2 className="fs-title">VA Purchase Calculator</h2>
 
-        <div className="fs-body mt-2">
-          {/* 1: Home Value */}
-          <div className="fs-field">
-            <label className="fs-label">Home Value</label>
-            <Input
-              type="text"
-              inputMode="numeric"
-              value={homeValue}
-              onChange={(e)=>setHomeValue(Number(e.target.value || 0))}
-              className="fs-input"
-            />
-          </div>
-
-          {/* 2: Down Payment ($ / %) */}
-          <div className="fs-field mt-4">
-            <label className="fs-label">Down Payment</label>
-            <div className="grid grid-cols-[1fr_auto] gap-2">
+          <div className="fs-body mt-2">
+            {/* 1: Home Value */}
+            <div className="fs-field">
+              <label className="fs-label">Home Value</label>
               <Input
                 type="text"
-                inputMode="decimal"
-                value={downValue}
-                onChange={(e)=>setDownValue(Number(e.target.value || 0))}
+                inputMode="numeric"
+                value={homeValue}
+                onChange={(e)=>setHomeValue(Number(e.target.value || 0))}
                 className="fs-input"
               />
-              <Seg
-                value={downMode === "percent" ? "%" : "$"}
-                onChange={(v)=> setDownMode(v === "%" ? "percent" : "amount")}
-                left="$"
-                right="%"
-                className="w-[100px]"
-              />
             </div>
-          </div>
 
-          {/* 3: Base Mortgage Amount (readonly) */}
-          <div className="fs-field mt-4">
-            <label className="fs-label">Base Mortgage Amount</label>
-            <div className="fs-readonly">
-              {baseLoan.toLocaleString(undefined,{minimumFractionDigits:2, maximumFractionDigits:2})}
-            </div>
-          </div>
-
-          {/* 4: Loan Terms (Year / Month) */}
-          <div className="fs-field mt-4">
-            <label className="fs-label">Loan Terms</label>
-            <div className="grid grid-cols-[1fr_auto] gap-2">
-              {termMode === "years" ? (
+            {/* 2: Down Payment ($ / %) */}
+            <div className="fs-field mt-4">
+              <label className="fs-label">Down Payment</label>
+              <div className="grid grid-cols-[1fr_auto] gap-2">
                 <Input
                   type="text"
-                  inputMode="numeric"
-                  value={loanYears}
-                  onChange={(e)=>{ const v = Number(e.target.value || 0); setLoanYears(v); setLoanMonths(Math.max(0, Math.round(v*12))); }}
+                  inputMode="decimal"
+                  value={downValue}
+                  onChange={(e)=>setDownValue(Number(e.target.value || 0))}
                   className="fs-input"
                 />
-              ) : (
+                <Seg
+                  value={downMode === "percent" ? "%" : "$"}
+                  onChange={(v)=> setDownMode(v === "%" ? "percent" : "amount")}
+                  left="$"
+                  right="%"
+                  className="w-[100px]"
+                />
+              </div>
+            </div>
+
+            {/* 3: Base Mortgage Amount (readonly) */}
+            <div className="fs-field mt-4">
+              <label className="fs-label">Base Mortgage Amount</label>
+              <div className="fs-readonly">
+                {baseLoan.toLocaleString(undefined,{minimumFractionDigits:2, maximumFractionDigits:2})}
+              </div>
+            </div>
+
+            {/* 4: Loan Terms (Year / Month) */}
+            <div className="fs-field mt-4">
+              <label className="fs-label">Loan Terms</label>
+              <div className="grid grid-cols-[1fr_auto] gap-2">
+                {termMode === "years" ? (
+                  <Input
+                    type="text"
+                    inputMode="numeric"
+                    value={loanYears}
+                    onChange={(e)=>{ const v = Number(e.target.value || 0); setLoanYears(v); setLoanMonths(Math.max(0, Math.round(v*12))); }}
+                    className="fs-input"
+                  />
+                ) : (
+                  <Input
+                    type="text"
+                    inputMode="numeric"
+                    value={loanMonths}
+                    onChange={(e)=>{ const v = Number(e.target.value || 0); setLoanMonths(v); setLoanYears(Math.max(0, Math.round(v/12))); }}
+                    className="fs-input"
+                  />
+                )}
+                <Seg
+                  value={termMode === "years" ? "Year" : "Month"}
+                  onChange={(v)=> setTermMode(v === "Year" ? "years" : "months")}
+                  left="Year"
+                  right="Month"
+                  className="w-[160px]"
+                />
+              </div>
+            </div>
+
+            {/* 5: Interest Rate */}
+            <div className="fs-field mt-4">
+              <label className="fs-label">Interest Rate</label>
+              <Input
+                type="text"
+                inputMode="decimal"
+                value={rate}
+                onChange={(e)=>setRate(Number(e.target.value || 0))}
+                className="fs-input"
+              />
+            </div>
+
+            {/* 6: This is my... */}
+            <div className="fs-field mt-4">
+              <label className="fs-label">This is my...</label>
+              <select
+                className="fs-input"
+                value={vaUse}
+                onChange={(e)=>setVaUse(e.target.value as any)}
+              >
+                <option value="first">First-time VA use</option>
+                <option value="subsequent">Subsequent VA use</option>
+                <option value="exempt">VA Disability (Funding Fee Exempt)</option>
+              </select>
+            </div>
+
+            {/* 7: VA Funding Fee (readonly + rate chip) */}
+            <div className="fs-field mt-4">
+              <label className="fs-label">VA Funding Fee <span className="text-xs text-neutral-500">({feeRate}% applied)</span></label>
+              <div className="fs-readonly">
+                {vaFundingFee.toLocaleString(undefined,{minimumFractionDigits:2, maximumFractionDigits:2})}
+              </div>
+            </div>
+
+            {/* 8: Final Mortgage Amount (readonly) */}
+            <div className="fs-field mt-4">
+              <label className="fs-label">Final Mortgage Amount</label>
+              <div className="fs-readonly">
+                {finalLoan.toLocaleString(undefined,{minimumFractionDigits:2, maximumFractionDigits:2})}
+              </div>
+            </div>
+
+            {/* 9: Property Tax (Yearly) $/% */}
+            <div className="fs-field mt-4">
+              <label className="fs-label">Property Tax (Yearly)</label>
+              <div className="grid grid-cols-[1fr_auto] gap-2">
                 <Input
                   type="text"
-                  inputMode="numeric"
-                  value={loanMonths}
-                  onChange={(e)=>{ const v = Number(e.target.value || 0); setLoanMonths(v); setLoanYears(Math.max(0, Math.round(v/12))); }}
+                  inputMode="decimal"
+                  value={taxValue}
+                  onChange={(e)=>setTaxValue(Number(e.target.value || 0))}
                   className="fs-input"
                 />
-              )}
-              <Seg
-                value={termMode === "years" ? "Year" : "Month"}
-                onChange={(v)=> setTermMode(v === "Year" ? "years" : "months")}
-                left="Year"
-                right="Month"
-                className="w-[160px]"
-              />
+                <Seg
+                  value={taxMode === "percent" ? "%" : "$"}
+                  onChange={(v)=> setTaxMode(v === "%" ? "percent" : "amount")}
+                  left="$"
+                  right="%"
+                  className="w-[100px]"
+                />
+              </div>
             </div>
-          </div>
 
-          {/* 5: Payment Frequency (display toggle) */}
-          <div className="fs-field mt-4">
-            <label className="fs-label">Payment Frequency</label>
-            <div className="grid grid-cols-[1fr]">
-              <Seg
-                value={payFreq === "year" ? "Year" : "Month"}
-                onChange={(v)=> setPayFreq(v === "Year" ? "year" : "month")}
-                left="Year"
-                right="Month"
-                className="w-[220px]"
-              />
+            {/* 10: Homeowners Insurance (Yearly) $/% */}
+            <div className="fs-field mt-4">
+              <label className="fs-label">Homeowners Insurance (Yearly)</label>
+              <div className="grid grid-cols-[1fr_auto] gap-2">
+                <Input
+                  type="text"
+                  inputMode="decimal"
+                  value={insValue}
+                  onChange={(e)=>setInsValue(Number(e.target.value || 0))}
+                  className="fs-input"
+                />
+                <Seg
+                  value={insMode === "amount" ? "$" : "%"}
+                  onChange={(v)=> setInsMode(v === "$" ? "amount" : "percent")}
+                  left="$"
+                  right="%"
+                  className="w-[100px]"
+                />
+              </div>
             </div>
-          </div>
 
-          {/* 6: Interest Rate */}
-          <div className="fs-field mt-4">
-            <label className="fs-label">Interest Rate</label>
-            <Input
-              type="text"
-              inputMode="decimal"
-              value={rate}
-              onChange={(e)=>setRate(Number(e.target.value || 0))}
-              className="fs-input"
-            />
-          </div>
-
-          {/* 7: This is my... */}
-          <div className="fs-field mt-4">
-            <label className="fs-label">This is my...</label>
-            <select
-              className="fs-input"
-              value={vaUse}
-              onChange={(e)=>setVaUse(e.target.value as any)}
-            >
-              <option value="first">First-time VA use</option>
-              <option value="subsequent">Subsequent VA use</option>
-              <option value="exempt">VA Disability (Funding Fee Exempt)</option>
-            </select>
-          </div>
-
-          {/* 8: VA Funding Fee (readonly + rate chip) */}
-          <div className="fs-field mt-4">
-            <label className="fs-label">VA Funding Fee <span className="text-xs text-neutral-500">({feeRate}% applied)</span></label>
-            <div className="fs-readonly">
-              {vaFundingFee.toLocaleString(undefined,{minimumFractionDigits:2, maximumFractionDigits:2})}
-            </div>
-          </div>
-
-          {/* 9: Final Mortgage Amount (readonly) */}
-          <div className="fs-field mt-4">
-            <label className="fs-label">Final Mortgage Amount</label>
-            <div className="fs-readonly">
-              {finalLoan.toLocaleString(undefined,{minimumFractionDigits:2, maximumFractionDigits:2})}
-            </div>
-          </div>
-
-          {/* 10: Property Tax (Yearly) $/% */}
-          <div className="fs-field mt-4">
-            <label className="fs-label">Property Tax (Yearly)</label>
-            <div className="grid grid-cols-[1fr_auto] gap-2">
+            {/* 11: HOA dues per month */}
+            <div className="fs-field mt-4">
+              <label className="fs-label">HOA Dues Per Month</label>
               <Input
                 type="text"
                 inputMode="decimal"
-                value={taxValue}
-                onChange={(e)=>setTaxValue(Number(e.target.value || 0))}
+                value={hoa}
+                onChange={(e)=>setHoa(Number(e.target.value || 0))}
                 className="fs-input"
               />
-              <Seg
-                value={taxMode === "percent" ? "%" : "$"}
-                onChange={(v)=> setTaxMode(v === "%" ? "percent" : "amount")}
-                left="$"
-                right="%"
-                className="w-[100px]"
+            </div>
+
+            {/* 12: First Payment Date */}
+            <div className="fs-field mt-4">
+              <label className="fs-label">First Payment Date</label>
+              <Input
+                type="date"
+                value={firstPaymentDate}
+                onChange={(e)=>setFirstPaymentDate(e.target.value)}
+                className="fs-input"
               />
             </div>
-          </div>
 
-          {/* 11: Homeowners Insurance (Yearly) $/% */}
-          <div className="fs-field mt-4">
-            <label className="fs-label">Homeowners Insurance (Yearly)</label>
-            <div className="grid grid-cols-[1fr_auto] gap-2">
+            {/* 13: Extra payment per month */}
+            <div className="fs-field mt-4">
+              <label className="fs-label">Extra Payment Per Month</label>
               <Input
                 type="text"
                 inputMode="decimal"
-                value={insValue}
-                onChange={(e)=>setInsValue(Number(e.target.value || 0))}
+                value={extraMonthly}
+                onChange={(e)=>setExtraMonthly(Number(e.target.value || 0))}
                 className="fs-input"
               />
-              <Seg
-                value={insMode === "amount" ? "$" : "%"}
-                onChange={(v)=> setInsMode(v === "$" ? "amount" : "percent")}
-                left="$"
-                right="%"
-                className="w-[100px]"
-              />
+            </div>
+
+            <button className="fs-cta mt-5 w-full">GET A QUOTE</button>
+          </div>
+        </div>
+
+        {/* COMBINED AREA: middle (content) + right (two cards) */}
+        <div className="grid grid-cols-[1fr_430px] gap-x-4 gap-y-3">
+          {/* Row 1: KPI strips INLINE */}
+          <div className="pc-strip pc-strip--green">
+            <div className="pc-strip__item">
+              <div className="pc-strip__label">All Payment</div>
+              <div className="pc-strip__value">
+                ${baselineTotals.allPayment.toLocaleString(undefined,{ maximumFractionDigits:2 })}
+              </div>
+            </div>
+            <div className="pc-strip__item">
+              <div className="pc-strip__label">Total Loan Amount</div>
+              <div className="pc-strip__value">
+                ${baselineTotals.totalLoanAmount.toLocaleString(undefined,{ maximumFractionDigits:2 })}
+              </div>
+            </div>
+            <div className="pc-strip__item">
+              <div className="pc-strip__label">Total Interest Paid</div>
+              <div className="pc-strip__value">
+                ${baselineTotals.totalInterest.toLocaleString(undefined,{ maximumFractionDigits:2 })}
+              </div>
             </div>
           </div>
 
-          {/* 12: HOA dues per month */}
-          <div className="fs-field mt-4">
-            <label className="fs-label">HOA Dues Per Month</label>
-            <Input
-              type="text"
-              inputMode="decimal"
-              value={hoa}
-              onChange={(e)=>setHoa(Number(e.target.value || 0))}
-              className="fs-input"
-            />
+          <div className="pc-strip pc-strip--rose">
+            <div className="pc-strip__item">
+              <div className="pc-strip__label">Savings</div>
+              <div className="pc-strip__value">
+                ${payoffStats.savings.toLocaleString(undefined,{ maximumFractionDigits:2 })}
+              </div>
+            </div>
+            <div className="pc-strip__item">
+              <div className="pc-strip__label">Payment Amount</div>
+              <div className="pc-strip__value">
+                ${payoffStats.paymentAmount.toLocaleString(undefined,{ maximumFractionDigits:2 })}
+              </div>
+            </div>
+            <div className="pc-strip__item">
+              <div className="pc-strip__label">Shorten Loan Term By</div>
+              <div className="pc-strip__value">{payoffStats.shortenText}</div>
+            </div>
           </div>
 
-          {/* 13: First Payment Date */}
-          <div className="fs-field mt-4">
-            <label className="fs-label">First Payment Date</label>
-            <Input
-              type="date"
-              value={firstPaymentDate}
-              onChange={(e)=>setFirstPaymentDate(e.target.value)}
-              className="fs-input"
-            />
-          </div>
+          {/* Row 2: LEFT = Payment Breakdown card */}
+          <Card className="pc-card self-start h-auto">
+            <CardHeader className="pc-card__header">
+              <CardTitle className="pc-card__title">Payment Breakdown</CardTitle>
 
-          {/* 14: Extra payment per month */}
-          <div className="fs-field mt-4">
-            <label className="fs-label">Extra Payment Per Month</label>
-            <Input
-              type="text"
-              inputMode="decimal"
-              value={extraMonthly}
-              onChange={(e)=>setExtraMonthly(Number(e.target.value || 0))}
-              className="fs-input"
-            />
-          </div>
+              <UiTooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="Payment Breakdown info"
+                    className="inline-flex items-center ml-1 text-[#0F2C4C] focus:outline-none"
+                  >
+                    <Info className="h-4 w-4"/>
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent
+                  side="right"
+                  align="start"
+                  sideOffset={8}
+                  className="p-0 bg-transparent border-0 shadow-none"
+                >
+                  <div className="relative w-72 rounded-xl bg-[#44C264] text-white p-4">
+                    <span className="absolute -left-1.5 top-4 h-3 w-3 rotate-45 bg-[#44C264]" />
+                    <div className="font-bold mb-1">Payment Breakdown</div>
+                    <p className="text-sm font-normal leading-5">
+                      A breakdown of your total payment so you can see where the money is allocated.
+                    </p>
+                  </div>
+                </TooltipContent>
+              </UiTooltip>
+            </CardHeader>
 
-          <button className="fs-cta mt-5 w-full">GET A QUOTE</button>
-        </div>
-      </div>
+            <CardContent className="pc-card__body align-center flex flex-col">
+              <div className="flex gap-6 align-center justify-center items-center">
+                <div className="w-[200px] h-[200px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Tooltip formatter={(v)=>`$${Number(v).toLocaleString(undefined,{maximumFractionDigits:2})}`} />
+                      <Pie
+                        data={paymentBreakdown}
+                        dataKey="value"
+                        nameKey="name"
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={84}
+                        paddingAngle={2}
+                      >
+                        {paymentBreakdown.map((s, i) => (
+                          <Cell key={i} fill={s.color} />
+                        ))}
+                        <Label position="center" content={renderCenterMonthlyLabel(totalMonthly)} />
+                      </Pie>
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
 
-      {/* MIDDLE COLUMN */}
-      <div className="grid gap-4">
-        {/* KPI Strips — Top (Green) */}
-        <div className="pc-strip pc-strip--green">
-          <div className="pc-strip__item">
-            <div className="pc-strip__label">All Payment</div>
-            <div className="pc-strip__value">${baselineTotals.allPayment.toLocaleString(undefined,{maximumFractionDigits:2})}</div>
-          </div>
-          <div className="pc-strip__item">
-            <div className="pc-strip__label">Total Loan Amount</div>
-            <div className="pc-strip__value">${baselineTotals.totalLoanAmount.toLocaleString(undefined,{maximumFractionDigits:2})}</div>
-          </div>
-          <div className="pc-strip__item">
-            <div className="pc-strip__label">Total Interest Paid</div>
-            <div className="pc-strip__value">${baselineTotals.totalInterest.toLocaleString(undefined,{maximumFractionDigits:2})}</div>
-          </div>
-        </div>
+                <div className="flex flex-col space-y-3 align-center">
+                  {paymentBreakdown.map((item) => (
+                    <div key={item.name} className="pc-row text-sm">
+                      <div className="flex items-center align-middle gap-2">
+                        <span className="inline-block h-3 w-3 rounded-full" style={{ background: item.color }} />
+                        <span>{item.name}</span>
+                      </div>
+                      <span className="pc-val">${item.value.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
 
-        {/* KPI Strips — Second (Pink) */}
-        <div className="pc-strip pc-strip--pink">
-          <div className="pc-strip__item">
-            <div className="pc-strip__label">Savings</div>
-            <div className="pc-strip__value">${payoffStats.savings.toLocaleString(undefined,{maximumFractionDigits:2})}</div>
-          </div>
-          <div className="pc-strip__item">
-            <div className="pc-strip__label">Payment Amount</div>
-            <div className="pc-strip__value">${payoffStats.paymentAmount.toLocaleString(undefined,{maximumFractionDigits:2})}</div>
-          </div>
-          <div className="pc-strip__item">
-            <div className="pc-strip__label">Shorten Loan Term By</div>
-            <div className="pc-strip__value">{payoffStats.shortenText}</div>
-          </div>
-        </div>
+              {/* Tabs inside the card */}
+              <Tabs defaultValue="monthly" className="mt-6">
+                <div className="border-b">
+                  <TabsList className="bg-transparent p-0 h-auto gap-6">
+                    <TabsTrigger value="monthly" className="rounded-none pb-2 data-[state=active]:border-b-2 data-[state=active]:border-green-600">
+                      Monthly Payment
+                    </TabsTrigger>
+                    <TabsTrigger value="total" className="rounded-none pb-2 data-[state=active]:border-b-2 data-[state=active]:border-green-600">
+                      Total Payment
+                    </TabsTrigger>
+                  </TabsList>
+                </div>
 
-        {/* Payment Breakdown Card */}
-        <Card className="pc-card">
-          <CardHeader className="pc-card__header">
-            <CardTitle className="pc-card__title">Payment Breakdown</CardTitle>
-            <span
-              className="pc-info"
-              title="Payment Breakdown: A breakdown of your total payment so you can see where the money is allocated."
-            >
-              <Info size={16} />
-            </span>
-          </CardHeader>
-          <CardContent className="pc-card__body">
-            {/* Donut + Legend */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="h-64">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Tooltip formatter={(v)=>`$${Number(v).toLocaleString(undefined,{maximumFractionDigits:2})}`} />
-                    <Pie
-                      data={paymentBreakdown}
-                      dataKey="value"
-                      nameKey="name"
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={84}
-                      paddingAngle={2}
+                <TabsContent value="monthly" className="pt-4">
+                  <div className="grid grid-cols-2 gap-6 text-sm">
+                    <div>
+                      <div className="text-neutral-500">Home Value:</div>
+                      <div className="font-semibold">${homeValue.toLocaleString()}</div>
+
+                      <div className="mt-3 text-neutral-500">Principal & Interest:</div>
+                      <div className="font-semibold">${monthlyPI.toLocaleString(undefined,{maximumFractionDigits:2})}</div>
+
+                      <div className="mt-3 text-neutral-500">Monthly Property Tax:</div>
+                      <div className="font-semibold">${monthlyTax.toLocaleString(undefined,{maximumFractionDigits:2})}</div>
+                    </div>
+
+                    <div>
+                      <div className="text-neutral-500">Mortgage Amount:</div>
+                      <div className="font-semibold">${finalLoan.toLocaleString(undefined,{maximumFractionDigits:2})}</div>
+
+                      <div className="mt-3 text-neutral-500">Monthly Home Insurance:</div>
+                      <div className="font-semibold">${monthlyIns.toLocaleString(undefined,{maximumFractionDigits:2})}</div>
+
+                      <div className="mt-3 text-neutral-500">HOA / Extra:</div>
+                      <div className="font-semibold">
+                        ${Number(hoa||0).toLocaleString(undefined,{maximumFractionDigits:2})} / ${Number(extraMonthly||0).toLocaleString(undefined,{maximumFractionDigits:2})}
+                      </div>
+                    </div>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="total" className="pt-4">
+                  <div className="grid grid-cols-2 gap-6 text-sm">
+                    <div>
+                      <div className="text-neutral-500">Total # Of Payments:</div>
+                      <div className="font-semibold">{n.toLocaleString()}</div>
+
+                      <div className="mt-3 text-neutral-500">Principal:</div>
+                      <div className="font-semibold">${finalLoan.toLocaleString(undefined,{maximumFractionDigits:2})}</div>
+
+                      <div className="mt-3 text-neutral-500">Total Interest Paid:</div>
+                      <div className="font-semibold">${baselineTotals.totalInterest.toLocaleString(undefined,{maximumFractionDigits:2})}</div>
+
+                      <div className="mt-3 text-neutral-500">Total of all Payments:</div>
+                      <div className="font-semibold">${baselineTotals.allPayment.toLocaleString(undefined,{maximumFractionDigits:2})}</div>
+                    </div>
+
+                    <div>
+                      <div className="text-neutral-500">Down Payment:</div>
+                      <div className="font-semibold">${downPayment.toLocaleString(undefined,{maximumFractionDigits:2})}</div>
+
+                      <div className="mt-3 text-neutral-500">Total Extra Payment:</div>
+                      <div className="font-semibold">${(extraMonthly * n).toLocaleString(undefined,{maximumFractionDigits:2})}</div>
+
+                      <div className="mt-3 text-neutral-500">Total Tax, Insurance and Fees:</div>
+                      <div className="font-semibold">
+                        ${((monthlyTax + monthlyIns + (hoa || 0)) * n).toLocaleString(undefined,{maximumFractionDigits:2})}
+                      </div>
+                    </div>
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </CardContent>
+          </Card>
+
+          {/* Row 2: RIGHT = two stacked cards */}
+          <div className="grid gap-4">
+            {/* Early Payoff Strategy */}
+            <Card className="pc-card self-start h-auto">
+              <CardHeader className="pc-card__header">
+                <CardTitle className="pc-card__title">Early Payoff Strategy</CardTitle>
+                <UiTooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Early Payoff Strategy info"
+                      className="inline-flex items-center ml-1 text-[#0F2C4C] focus:outline-none"
                     >
-                      {paymentBreakdown.map((s, i) => (
-                        <Cell key={i} fill={s.color} />
-                      ))}
-                      <Label position="center" content={renderCenterMonthlyLabel(totalMonthly)} />
-                    </Pie>
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
-
-              <div className="space-y-3">
-                {paymentBreakdown.map((item) => (
-                  <div key={item.name} className="pc-row text-sm">
-                    <div className="flex items-center gap-2">
-                      <span className="inline-block h-3 w-3 rounded-full" style={{ background: item.color }} />
-                      <span>{item.name}</span>
+                      <Info className="h-4 w-4"/>
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent
+                    side="right"
+                    align="start"
+                    sideOffset={8}
+                    className="p-0 bg-transparent border-0 shadow-none"
+                  >
+                    <div className="relative w-72 rounded-xl bg-[#44C264] text-white p-4">
+                      <span className="absolute -left-1.5 top-4 h-3 w-3 rotate-45 bg-[#44C264]" />
+                      <div className="font-bold mb-1">Early Payoff Strategy</div>
+                      <p className="text-sm font-normal leading-5">
+                        Add an extra payment and see how many months you can eliminate on the back end of the loan.
+                      </p>
                     </div>
-                    <span className="pc-val">${item.value.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Tabs INSIDE the same card */}
-            <div className="mt-6">
-              <div className="border-b">
-                <div className="bg-transparent p-0 h-auto gap-6 flex">
-                  <button className="pb-2 border-b-2 border-green-600 font-medium">Monthly Payment</button>
-                  <button className="pb-2 opacity-60 hover:opacity-100">Total Payment</button>
-                </div>
-              </div>
-
-              {/* “Monthly Payment” table (static like your Purchase) */}
-              <div className="pt-4">
-                <div className="grid grid-cols-2 gap-6 text-sm">
+                  </TooltipContent>
+                </UiTooltip>
+              </CardHeader>
+              <CardContent className="pc-card__body">
+                <div className="space-y-4">
                   <div>
-                    <div className="text-neutral-500">Home Value:</div>
-                    <div className="font-semibold">${homeValue.toLocaleString()}</div>
-
-                    <div className="mt-3 text-neutral-500">Principal & Interest:</div>
-                    <div className="font-semibold">${monthlyPI.toLocaleString(undefined,{maximumFractionDigits:2})}</div>
-
-                    <div className="mt-3 text-neutral-500">Monthly Property Tax:</div>
-                    <div className="font-semibold">${monthlyTax.toLocaleString(undefined,{maximumFractionDigits:2})}</div>
+                    <div className="text-sm font-medium mb-2">Additional Monthly</div>
+                    <Input
+                      type="text"
+                      inputMode="decimal"
+                      value={extraMonthly}
+                      onChange={(e)=>setExtraMonthly(Number(e.target.value || 0))}
+                      className="eps-input"
+                    />
                   </div>
 
                   <div>
-                    <div className="text-neutral-500">Mortgage Amount:</div>
-                    <div className="font-semibold">${finalLoan.toLocaleString(undefined,{maximumFractionDigits:2})}</div>
-
-                    <div className="mt-3 text-neutral-500">Monthly Home Insurance:</div>
-                    <div className="font-semibold">${monthlyIns.toLocaleString(undefined,{maximumFractionDigits:2})}</div>
-
-                    <div className="mt-3 text-neutral-500">HOA / Extra:</div>
-                    <div className="font-semibold">
-                      ${Number(hoa||0).toLocaleString(undefined,{maximumFractionDigits:2})} / ${Number(extraMonthly||0).toLocaleString(undefined,{maximumFractionDigits:2})}
+                    <div className="text-sm font-medium mb-2">Increase Frequency</div>
+                    <div className="flex gap-3">
+                      <Button
+                        className={buttonVariants({ variant: increaseFreq === "monthly" ? "default" : "secondary" })}
+                        onClick={()=>setIncreaseFreq("monthly")}
+                      >
+                        Monthly
+                      </Button>
+                      <Button
+                        className={buttonVariants({ variant: increaseFreq === "biweekly" ? "default" : "secondary" })}
+                        onClick={()=>setIncreaseFreq("biweekly")}
+                      >
+                        Bi weekly
+                      </Button>
+                      <Button
+                        className={buttonVariants({ variant: increaseFreq === "weekly" ? "default" : "secondary" })}
+                        onClick={()=>setIncreaseFreq("weekly")}
+                      >
+                        Weekly
+                      </Button>
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+              </CardContent>
+            </Card>
 
-      {/* RIGHT SIDEBAR */}
-      <div className="grid gap-4">
-        {/* Early Payoff Strategy */}
-        <Card className="pc-card">
-          <CardHeader className="pc-card__header">
-            <CardTitle className="pc-card__title">Early Payoff Strategy</CardTitle>
-            <span
-              className="pc-info"
-              title="Early Payoff Strategy: Add an extra payment and see how many months you can eliminate on the back end of the loan."
-            >
-              <Info size={16} />
-            </span>
-          </CardHeader>
-          <CardContent className="pc-card__body">
-            <div className="space-y-4">
-              <div>
-                <div className="text-sm font-medium mb-2">Additional Monthly</div>
-                <Input
-                  type="text"
-                  inputMode="decimal"
-                  value={extraMonthly}
-                  onChange={(e)=>setExtraMonthly(Number(e.target.value || 0))}
-                  className="fs-input"
-                />
-              </div>
+            {/* Lump Sum Payment */}
+            <Card className="pc-card self-start h-auto">
+              <CardHeader className="pc-card__header">
+                <CardTitle className="pc-card__title">Lump Sum Payment</CardTitle>
+                <UiTooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Lump Sum Payment info"
+                      className="inline-flex items-center ml-1 text-[#0F2C4C] focus:outline-none"
+                    >
+                      <Info className="h-4 w-4"/>
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent
+                    side="right"
+                    align="start"
+                    sideOffset={8}
+                    className="p-0 bg-transparent border-0 shadow-none"
+                  >
+                    <div className="relative w-72 rounded-xl bg-[#44C264] text-white p-4">
+                      <span className="absolute -left-1.5 top-4 h-3 w-3 rotate-45 bg-[#44C264]" />
+                      <div className="font-bold mb-1">Lump Sum Payment</div>
+                      <p className="text-sm font-normal leading-5">
+                        Shorten your loan term by paying a lump sum all to principal.
+                      </p>
+                    </div>
+                  </TooltipContent>
+                </UiTooltip>
+              </CardHeader>
+              <CardContent className="pc-card__body">
+                <div className="space-y-4">
+                  <div>
+                    <div className="text-sm font-medium mb-2">Lump Sum Addition</div>
+                    <Input
+                      type="text"
+                      inputMode="decimal"
+                      value={lumpSum}
+                      onChange={(e)=>setLumpSum(Number(e.target.value || 0))}
+                      className="eps-input"
+                    />
+                  </div>
 
-              <div>
-                <div className="text-sm font-medium mb-2">Increase Frequency</div>
-                <div className="flex gap-3">
-                  <Button
-                    className={buttonVariants({ variant: increaseFreq === "monthly" ? "default" : "secondary" })}
-                    onClick={()=>setIncreaseFreq("monthly")}
-                  >
-                    Monthly
-                  </Button>
-                  <Button
-                    className={buttonVariants({ variant: increaseFreq === "biweekly" ? "default" : "secondary" })}
-                    onClick={()=>setIncreaseFreq("biweekly")}
-                  >
-                    Bi weekly
-                  </Button>
-                  <Button
-                    className={buttonVariants({ variant: increaseFreq === "weekly" ? "default" : "secondary" })}
-                    onClick={()=>setIncreaseFreq("weekly")}
-                  >
-                    Weekly
-                  </Button>
+                  <div>
+                    <div className="text-sm font-medium mb-2">Frequency</div>
+                    <div className="flex gap-3">
+                      <Button
+                        className={buttonVariants({ variant: lumpFreq === "once" ? "default" : "secondary" })}
+                        onClick={()=>setLumpFreq("once")}
+                      >
+                        One time
+                      </Button>
+                      <Button
+                        className={buttonVariants({ variant: lumpFreq === "yearly" ? "default" : "secondary" })}
+                        onClick={()=>setLumpFreq("yearly")}
+                      >
+                        Yearly
+                      </Button>
+                      <Button
+                        className={buttonVariants({ variant: lumpFreq === "quarterly" ? "default" : "secondary" })}
+                        onClick={()=>setLumpFreq("quarterly")}
+                      >
+                        Quarterly
+                      </Button>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Lump Sum Payment */}
-        <Card className="pc-card">
-          <CardHeader className="pc-card__header">
-            <CardTitle className="pc-card__title">Lump Sum Payment</CardTitle>
-            <span
-              className="pc-info"
-              title="Lump Sum Payment: Shorten your loan term by paying a lump sum all to principal."
-            >
-              <Info size={16} />
-            </span>
-          </CardHeader>
-          <CardContent className="pc-card__body">
-            <div className="space-y-4">
-              <div>
-                <div className="text-sm font-medium mb-2">Lump Sum Addition</div>
-                <Input
-                  type="text"
-                  inputMode="decimal"
-                  value={lumpSum}
-                  onChange={(e)=>setLumpSum(Number(e.target.value || 0))}
-                  className="fs-input"
-                />
-              </div>
-
-              <div>
-                <div className="text-sm font-medium mb-2">Frequency</div>
-                <div className="flex gap-3">
-                  <Button
-                    className={buttonVariants({ variant: lumpFreq === "once" ? "default" : "secondary" })}
-                    onClick={()=>setLumpFreq("once")}
-                  >
-                    One time
-                  </Button>
-                  <Button
-                    className={buttonVariants({ variant: lumpFreq === "yearly" ? "default" : "secondary" })}
-                    onClick={()=>setLumpFreq("yearly")}
-                  >
-                    Yearly
-                  </Button>
-                  <Button
-                    className={buttonVariants({ variant: lumpFreq === "quarterly" ? "default" : "secondary" })}
-                    onClick={()=>setLumpFreq("quarterly")}
-                  >
-                    Quarterly
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

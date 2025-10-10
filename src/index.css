@@ -197,19 +197,24 @@ p, span, div, a, button, input, textarea, select, option, label, legend {
 .fs-tabs .tab[data-state="active"]{ background:transparent; color:#fff; border-bottom: 2px solid #E59C29; border-radius: 0; }
 .fs-tabs { border-bottom: 2px solid #71737A; margin-bottom: 20px; }
 /* field */
-.fs-field         { display:grid; gap:6px; }
+.fs-field         { display:grid; gap:6px; margin-right: 5px; margin-left: 5px; }
 .fs-grid2         { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-left: 5px; margin-right: 5px; }
-.fs-label         { font-size:13px; font-weight:600; color:#cad3e6; letter-spacing:.01em; display:flex; align-items:center; gap:6px; }
-.fs-sublabel      { display:block; font-size:12px; font-weight:500; color:#9fb0cc; margin-top:2px; }
+.fs-label         { font-size:13px; font-weight:600; color:#fff; letter-spacing:.01em; display:flex; align-items:center; gap:6px; }
+.fs-sublabel      { display:block; font-size:12px; font-weight:500; color:#fff; margin-top:2px; }
 
 /* input */
 .fs-input, .fs-select, .fs-readonly {
   height:46px; border-radius:10px;
-  background:rgba(255,255,255,.1); 
+  background:rgba(255,255,255,.1)!important; 
   color:#f2f6ff;
   padding:0 12px;
-  
 }
+  .eps-input{
+    height:46px; border-radius:10px;
+    background-color:rgb(207, 207, 207)!important; 
+    color:#5a5a5a;
+    padding:0 12px;
+  }
 .fs-input::placeholder{ color:#9fb0cc; }
 .fs-readonly{ display:flex; align-items:center; }
 .no-arrows::-webkit-outer-spin-button,
@@ -281,7 +286,7 @@ p, span, div, a, button, input, textarea, select, option, label, legend {
   border:1px solid hsl(var(--sl-border,216 20% 90%));
   border-radius:12px;
   background:#fff;
-  box-shadow:0 6px 18px rgba(33,37,41,.06);
+  align-items: center;
 }
 .pc-strip--green{ background:#eaf7ef; }
 .pc-strip--rose{  background:#fdecef; }
@@ -296,10 +301,18 @@ p, span, div, a, button, input, textarea, select, option, label, legend {
   border:1px solid hsl(var(--sl-border,216 20% 90%));
   border-radius:12px;
   box-shadow:0 6px 18px rgba(33,37,41,.06);
+  height: auto!important;
 }
-.pc-card__header{ display:flex; align-items:center; justify-content:space-between; padding:16px 20px 8px; }
+.pc-card__header{ display:flex; flex-direction:row; justify-content:space-between; padding:16px 20px 8px; }
 .pc-card__title{ font-size:18px; font-weight:600; }
-.pc-info{ display:inline-flex; align-items:center; color:#9ca3af; } /* neutral-400 */
+.pc-info{
+  display:inline-flex !important;
+  align-items:center !important;
+  justify-content:center !important;
+  width:20px !important;
+  height:20px !important;
+  color:#9ca3af !important;              /* neutral-400 like your target */
+}
 .pc-card__body{ padding:20px; }
 
 /* Key/value rows inside details (NEW) */
@@ -396,19 +409,89 @@ p, span, div, a, button, input, textarea, select, option, label, legend {
   font-size:12px; font-weight:700;
 }
 
-.rvb-slider{ position:relative; display:grid; align-items:center; }
-.rvb-slider input[type=range]{ width:100%; }
-.rvb-slider__bubble{
-  position:absolute; top:-22px; left:0;
-  transform:translateX(calc((var(--v,0) * 1%) - 12px));
-  font-size:12px; font-weight:800; background:hsl(var(--primary)/.12);
-  border:1px solid hsl(var(--border));
-  padding:2px 6px; border-radius:6px;
+/* ===== Slider with number ON the thumb ===== */
+.rvb-slider.rvb-slider--thumbnum {
+  --clr: #22c55e;         /* green */
+  --track: #e6f4ea;       /* light green */
+  --track-h: 8px;
+  --thumb-size: 26px;
+  position: relative;
 }
 
-/* ===== VA Refinance page only ===== */
+/* track + left-fill using background-size (WebKit) */
+.rvb-slider.rvb-slider--thumbnum input[type="range"]{
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: var(--track-h);
+  border-radius: 999px;
+  background:
+    linear-gradient(var(--clr), var(--clr)) 0/var(--_p,0%) 100% no-repeat,
+    var(--track);
+  outline: none;
+  cursor: pointer;
+  position: relative;
+}
+
+/* hide native thumb but keep it interactive */
+.rvb-slider.rvb-slider--thumbnum input[type="range"]::-webkit-slider-thumb{
+  -webkit-appearance: none;
+  appearance: none;
+  width: var(--thumb-size);
+  height: var(--thumb-size);
+  border-radius: 8px;
+  background: transparent;
+  border: 0;
+  opacity: 0; /* invisible; our custom thumb will sit above */
+}
+.rvb-slider.rvb-slider--thumbnum input[type="range"]::-moz-range-thumb{
+  width: var(--thumb-size);
+  height: var(--thumb-size);
+  border-radius: 8px;
+  background: transparent;
+  border: 0;
+  opacity: 0;
+}
+
+/* Firefox track/progress */
+.rvb-slider.rvb-slider--thumbnum input[type="range"]::-moz-range-track{
+  height: var(--track-h);
+  border-radius: 999px;
+  background: var(--track);
+}
+.rvb-slider.rvb-slider--thumbnum input[type="range"]::-moz-range-progress{
+  height: var(--track-h);
+  border-radius: 999px;
+  background: var(--clr);
+}
+
+/* custom thumb with the number */
+.rvb-slider__thumb{
+  position: absolute;
+  top: 50%;
+  left: calc(var(--v, 0) * 1%);  /* 0..100, set inline */
+  transform: translate(-50%, -50%);
+  width: var(--thumb-size);
+  height: var(--thumb-size);
+  border-radius: 8px;
+  background: var(--clr);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font: 800 12px/1 Inter, system-ui, sans-serif;
+  box-shadow: 0 2px 6px rgba(0,0,0,.15);
+  pointer-events: none; /* do not block dragging */
+  user-select: none;
+  transition: transform .12s ease, background-color .12s ease;
+}
+.rvb-slider.rvb-slider--thumbnum:hover .rvb-slider__thumb{
+  transform: translate(-50%, -50%) scale(1.02);
+}
+
+
+/* VA Refi — right-side UI (banner, KPIs, cards, bars) */
 .va-refi-banner{
-  background:#ecfdf5; /* light green tint */
+  background:#ecfdf5;
   border:1px solid #d1fae5;
   color:#065f46;
   padding:16px 18px;
@@ -426,38 +509,35 @@ p, span, div, a, button, input, textarea, select, option, label, legend {
 .va-refi-kpi__label{ font-size:12px; color:#0f766e; }
 .va-refi-kpi__value{ font-size:28px; line-height:1.1; font-weight:700; color:#065f46; margin-top:6px; }
 
-.va-refi-card{
-  border:1px solid #eafaf0;
-  background:#ffffff;
-}
+.va-refi-card{ border:1px solid #eafaf0; background:#fff; }
 .va-refi-card__header{
   display:flex; align-items:center; justify-content:space-between;
-  padding:14px 16px;
-  border-bottom:1px solid #eef6ef;
+  padding:14px 16px; border-bottom:1px solid #eef6ef;
 }
 .va-refi-card__title{ font-size:16px; font-weight:700; }
 .va-refi-card__body{ padding:16px; }
+.pc-info{ display:inline-flex; align-items:center; color:#9ca3af; width:20px; height:20px; }
 
-.va-row{
-  display:flex; align-items:center; justify-content:space-between;
-  font-size:14px;
-}
+.va-row{ display:flex; align-items:center; justify-content:space-between; font-size:14px; }
 .va-row__label{ color:#374151; }
 .va-row__val{ font-weight:700; color:#0b3d2e; }
 
 .va-bar{
-  margin-top:8px;
-  height:14px;
-  background:#f1f5f9;
-  border-radius:10px;
-  overflow:hidden;
-  display:flex;
+  margin-top:8px; height:14px; background:#f1f5f9; border-radius:10px; overflow:hidden; display:flex;
 }
 .va-bar__fill{ height:100%; }
-.va-bar__fill--dark{ background:#1f2937; }        /* dark slate */
-.va-bar__fill--light{ background:#e5e7eb; flex:1; }/* light slate remainder */
-.va-bar__fill--pink{ background:#fde2e2; }        /* soft pink for "increase" bars */
-.va-bar__fill--green{ background:#86efac; }       /* soft green */
+.va-bar__fill--dark{ background:#1f2937; }
+.va-bar__fill--light{ background:#e5e7eb; flex:1; }
+.va-bar__fill--pink{ background:#fde2e2; }
+.va-bar__fill--green{ background:#86efac; }
+
+@media (max-width:1200px){
+  .grid.grid-cols-4{ grid-template-columns: repeat(2,minmax(0,1fr)); }
+}
+@media (max-width:800px){
+  .grid.md\:grid-cols-2{ grid-template-columns: 1fr; }
+}
+
 
 .va-radio{ display:grid; gap:10px; }
 .va-radio__btn{
@@ -501,10 +581,21 @@ p, span, div, a, button, input, textarea, select, option, label, legend {
 
 .dscr-card{ border:1px solid #eafaf0; height:auto;}
 .dscr-card__header{
-  display:flex; align-items:center; justify-content:space-between;
-  padding:14px 16px; border-bottom:1px solid #eef6ef;
+  display:flex !important;
+  flex-direction:row !important;
+  align-items:center !important;
+  justify-content:space-between !important;
+  gap:8px !important;
+  padding:14px 16px !important;         /* match your screenshot spacing */
+  border-bottom:1px solid #eef6ef !important;
 }
-.dscr-card__title{ font-weight:700; font-size:16px; }
+.dscr-card__title{
+  margin:0 !important;
+  text-align:left !important;
+  font-weight:700 !important;
+  font-size:16px !important;
+  line-height:1.2 !important;
+}
 .dscr-card__body{ padding:16px; }
 .dscr-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px 24px; }
 
@@ -553,3 +644,49 @@ p, span, div, a, button, input, textarea, select, option, label, legend {
 .ds-row{ display:flex; align-items:center; justify-content:space-between; font-size:14px; }
 .ds-row > span{ color:#374151; }
 .ds-row > b{ color:#0b3d2e; font-weight:700; }
+@layer components {
+  /* nav container */
+  .calc-nav {
+    @apply flex items-center gap-6 overflow-x-hidden pb-4;
+  }
+
+  .calc-title {
+    @apply mr-4;
+    font-family: "Hector", sans-serif;
+    font-weight: 400;
+    font-size: 22px;
+    line-height: 1;
+  }
+
+  /* tabs list: no bg, sits on the same bottom border */
+  .calc-tablist {
+    @apply flex gap-7 bg-transparent p-0;
+  }
+
+  /* each trigger: plain text + gold underline when active */
+  .calc-trigger {
+    @apply relative rounded-none bg-transparent px-0 py-3 text-[14px] lg:text-[15px]
+           text-neutral-700 hover:text-neutral-900;
+  }
+  .calc-trigger::after {
+    content: "";
+    position: absolute;
+    left: 0;              /* underline starts at text left, like the screenshot */
+    bottom: -2px;         /* sits just below the border line */
+    height: 3px;
+    width: 100%;        /* short bar */
+    background: #E59C29;  /* gold */
+    border-radius: 2px;
+    opacity: 0;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform .18s ease, opacity .18s ease;
+  }
+  .calc-trigger[data-state="active"] {
+    @apply text-black;
+  }
+  .calc-trigger[data-state="active"]::after {
+    opacity: 1;
+    transform: scaleX(1);
+  }
+}

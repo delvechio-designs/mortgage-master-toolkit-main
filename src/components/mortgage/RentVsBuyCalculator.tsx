@@ -3,6 +3,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Info, CheckCircle2, ChevronDown } from "lucide-react";
+import {
+  Tooltip as UiTooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 
 /* ------------------------------------------------------------
    Helpers
@@ -162,8 +167,13 @@ export default function RentVsBuyCalculator() {
   const rentBarPct = Math.round((adjustedNetCashSavingsRent / maxBar) * 100);
   const buyBarPct = Math.round((adjustedNetCashSavingsBuy / maxBar) * 100);
 
+  /* --- slider position % for the custom thumb --- */
+  const minYears = 1;
+  const maxYears = 40;
+  const pct = ((years - minYears) / (maxYears - minYears)) * 100;
+
   return (
-    <div className="grid gap-6" style={{ gridTemplateColumns: "550px 1fr" }}>
+    <div className="grid gap-6" style={{ gridTemplateColumns: "500px 1fr" }}>
       {/* LEFT SIDEBAR WITH THREE DROPDOWNS */}
       <div className="fs-panel fs-fixed">
         <h2 className="fs-title">Rent vs Buy Calculator</h2>
@@ -177,7 +187,21 @@ export default function RentVsBuyCalculator() {
           >
             <div className="fs-field">
               <label className="fs-label">
-                Home Price <span title="Lorem"><Info size={14} /></span>
+                Home Price
+                <UiTooltip>
+                  <TooltipTrigger asChild>
+                    <button className="inline-flex items-center ml-1 text-[#FFFFFF] focus:outline-none" aria-label="Home Price">
+                      <Info className="h-4 w-4" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" align="start" sideOffset={8} className="p-0 bg-transparent border-0 shadow-none">
+                    <div className="relative w-72 rounded-xl bg-[#44C264] text-white p-4">
+                      <span className="absolute -left-1.5 top-4 h-3 w-3 rotate-45 bg-[#44C264]" />
+                      <div className="font-bold mb-1">Home Price</div>
+                      <p className="text-sm leading-5">Estimated purchase price of the property.</p>
+                    </div>
+                  </TooltipContent>
+                </UiTooltip>
               </label>
               <Input
                 type="text"
@@ -190,7 +214,21 @@ export default function RentVsBuyCalculator() {
 
             <div className="fs-field mt-4">
               <label className="fs-label">
-                Down Payment <span title="Lorem"><Info size={14} /></span>
+                Down Payment
+                <UiTooltip>
+                  <TooltipTrigger asChild>
+                    <button className="inline-flex items-center ml-1 text-[#FFFFFF] focus:outline-none" aria-label="Down Payment">
+                      <Info className="h-4 w-4" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" align="start" sideOffset={8} className="p-0 bg-transparent border-0 shadow-none">
+                    <div className="relative w-72 rounded-xl bg-[#44C264] text-white p-4">
+                      <span className="absolute -left-1.5 top-4 h-3 w-3 rotate-45 bg-[#44C264]" />
+                      <div className="font-bold mb-1">Down Payment</div>
+                      <p className="text-sm leading-5">Amount you’ll pay upfront (enter dollars or percent).</p>
+                    </div>
+                  </TooltipContent>
+                </UiTooltip>
               </label>
               <div className="grid grid-cols-[1fr_auto] gap-2">
                 <Input
@@ -223,7 +261,21 @@ export default function RentVsBuyCalculator() {
 
             <div className="fs-field mt-4">
               <label className="fs-label">
-                Loan Amount <span title="Lorem"><Info size={14} /></span>
+                Loan Amount
+                <UiTooltip>
+                  <TooltipTrigger asChild>
+                    <button className="inline-flex items-center ml-1 text-[#FFFFFF] focus:outline-none" aria-label="Loan Amount">
+                      <Info className="h-4 w-4" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" align="start" sideOffset={8} className="p-0 bg-transparent border-0 shadow-none">
+                    <div className="relative w-72 rounded-xl bg-[#44C264] text-white p-4">
+                      <span className="absolute -left-1.5 top-4 h-3 w-3 rotate-45 bg-[#44C264]" />
+                      <div className="font-bold mb-1">Loan Amount</div>
+                      <p className="text-sm leading-5">Your expected starting principal.</p>
+                    </div>
+                  </TooltipContent>
+                </UiTooltip>
               </label>
               <Input
                 type="text"
@@ -236,7 +288,21 @@ export default function RentVsBuyCalculator() {
 
             <div className="fs-field mt-4">
               <label className="fs-label">
-                Interest Rate <span title="Lorem"><Info size={14} /></span>
+                Interest Rate
+                <UiTooltip>
+                  <TooltipTrigger asChild>
+                    <button className="inline-flex items-center ml-1 text-[#FFFFFF] focus:outline-none" aria-label="Interest Rate">
+                      <Info className="h-4 w-4" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" align="start" sideOffset={8} className="p-0 bg-transparent border-0 shadow-none">
+                    <div className="relative w-72 rounded-xl bg-[#44C264] text-white p-4">
+                      <span className="absolute -left-1.5 top-4 h-3 w-3 rotate-45 bg-[#44C264]" />
+                      <div className="font-bold mb-1">Interest Rate</div>
+                      <p className="text-sm leading-5">Annual percentage rate (APR) for the mortgage.</p>
+                    </div>
+                  </TooltipContent>
+                </UiTooltip>
               </label>
               <Input
                 type="text"
@@ -249,7 +315,21 @@ export default function RentVsBuyCalculator() {
 
             <div className="fs-field mt-4">
               <label className="fs-label">
-                Loan Term <span title="Lorem"><Info size={14} /></span>
+                Loan Term
+                <UiTooltip>
+                  <TooltipTrigger asChild>
+                    <button className="inline-flex items-center ml-1 text-[#FFFFFF] focus:outline-none" aria-label="Loan Term">
+                      <Info className="h-4 w-4" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" align="start" sideOffset={8} className="p-0 bg-transparent border-0 shadow-none">
+                    <div className="relative w-72 rounded-xl bg-[#44C264] text-white p-4">
+                      <span className="absolute -left-1.5 top-4 h-3 w-3 rotate-45 bg-[#44C264]" />
+                      <div className="font-bold mb-1">Loan Term</div>
+                      <p className="text-sm leading-5">Length of the mortgage in years or months.</p>
+                    </div>
+                  </TooltipContent>
+                </UiTooltip>
               </label>
               <div className="grid grid-cols-[1fr_auto] gap-2">
                 {termMode === "year" ? (
@@ -300,7 +380,21 @@ export default function RentVsBuyCalculator() {
 
             <div className="fs-field mt-4">
               <label className="fs-label">
-                Start Date <span title="Lorem"><Info size={14} /></span>
+                Start Date
+                <UiTooltip>
+                  <TooltipTrigger asChild>
+                    <button className="inline-flex items-center ml-1 text-[#FFFFFF] focus:outline-none" aria-label="Start Date">
+                      <Info className="h-4 w-4" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" align="start" sideOffset={8} className="p-0 bg-transparent border-0 shadow-none">
+                    <div className="relative w-72 rounded-xl bg-[#44C264] text-white p-4">
+                      <span className="absolute -left-1.5 top-4 h-3 w-3 rotate-45 bg-[#44C264]" />
+                      <div className="font-bold mb-1">Start Date</div>
+                      <p className="text-sm leading-5">First payment month for the loan.</p>
+                    </div>
+                  </TooltipContent>
+                </UiTooltip>
               </label>
               <Input
                 type="date"
@@ -312,7 +406,21 @@ export default function RentVsBuyCalculator() {
 
             <div className="fs-field mt-4">
               <label className="fs-label">
-                PMI (Yearly) <span title="Lorem"><Info size={14} /></span>
+                PMI (Yearly)
+                <UiTooltip>
+                  <TooltipTrigger asChild>
+                    <button className="inline-flex items-center ml-1 text-[#FFFFFF] focus:outline-none" aria-label="PMI">
+                      <Info className="h-4 w-4" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" align="start" sideOffset={8} className="p-0 bg-transparent border-0 shadow-none">
+                    <div className="relative w-72 rounded-xl bg-[#44C264] text-white p-4">
+                      <span className="absolute -left-1.5 top-4 h-3 w-3 rotate-45 bg-[#44C264]" />
+                      <div className="font-bold mb-1">PMI</div>
+                      <p className="text-sm leading-5">Private Mortgage Insurance paid annually.</p>
+                    </div>
+                  </TooltipContent>
+                </UiTooltip>
               </label>
               <Input
                 type="text"
@@ -323,10 +431,24 @@ export default function RentVsBuyCalculator() {
               />
             </div>
 
-            {/* Optional info inside Mortgage block per your list */}
+            {/* Optional info inside Mortgage block */}
             <div className="fs-field mt-6">
               <label className="fs-label">
-                Home Insurance (Yearly) <span title="Lorem"><Info size={14} /></span>
+                Home Insurance (Yearly)
+                <UiTooltip>
+                  <TooltipTrigger asChild>
+                    <button className="inline-flex items-center ml-1 text-[#FFFFFF] focus:outline-none" aria-label="Home Insurance">
+                      <Info className="h-4 w-4" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" align="start" sideOffset={8} className="p-0 bg-transparent border-0 shadow-none">
+                    <div className="relative w-72 rounded-xl bg-[#44C264] text-white p-4">
+                      <span className="absolute -left-1.5 top-4 h-3 w-3 rotate-45 bg-[#44C264]" />
+                      <div className="font-bold mb-1">Home Insurance</div>
+                      <p className="text-sm leading-5">Annual homeowners insurance premium.</p>
+                    </div>
+                  </TooltipContent>
+                </UiTooltip>
               </label>
               <Input
                 type="text"
@@ -339,7 +461,21 @@ export default function RentVsBuyCalculator() {
 
             <div className="fs-field mt-4">
               <label className="fs-label">
-                Taxes (Yearly) <span title="Lorem"><Info size={14} /></span>
+                Taxes (Yearly)
+                <UiTooltip>
+                  <TooltipTrigger asChild>
+                    <button className="inline-flex items-center ml-1 text-[#FFFFFF] focus:outline-none" aria-label="Property Taxes">
+                      <Info className="h-4 w-4" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" align="start" sideOffset={8} className="p-0 bg-transparent border-0 shadow-none">
+                    <div className="relative w-72 rounded-xl bg-[#44C264] text-white p-4">
+                      <span className="absolute -left-1.5 top-4 h-3 w-3 rotate-45 bg-[#44C264]" />
+                      <div className="font-bold mb-1">Property Taxes</div>
+                      <p className="text-sm leading-5">Annual property tax estimate.</p>
+                    </div>
+                  </TooltipContent>
+                </UiTooltip>
               </label>
               <Input
                 type="text"
@@ -352,7 +488,21 @@ export default function RentVsBuyCalculator() {
 
             <div className="fs-field mt-4">
               <label className="fs-label">
-                HOA Dues (Monthly) <span title="Lorem"><Info size={14} /></span>
+                HOA Dues (Monthly)
+                <UiTooltip>
+                  <TooltipTrigger asChild>
+                    <button className="inline-flex items-center ml-1 text-[#FFFFFF] focus:outline-none" aria-label="HOA Dues">
+                      <Info className="h-4 w-4" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" align="start" sideOffset={8} className="p-0 bg-transparent border-0 shadow-none">
+                    <div className="relative w-72 rounded-xl bg-[#44C264] text-white p-4">
+                      <span className="absolute -left-1.5 top-4 h-3 w-3 rotate-45 bg-[#44C264]" />
+                      <div className="font-bold mb-1">HOA Dues</div>
+                      <p className="text-sm leading-5">Monthly homeowners association fees.</p>
+                    </div>
+                  </TooltipContent>
+                </UiTooltip>
               </label>
               <Input
                 type="text"
@@ -372,7 +522,21 @@ export default function RentVsBuyCalculator() {
           >
             <div className="fs-field">
               <label className="fs-label">
-                Marginal Tax Bracket (%) <span title="Lorem"><Info size={14} /></span>
+                Marginal Tax Bracket (%)
+                <UiTooltip>
+                  <TooltipTrigger asChild>
+                    <button className="inline-flex items-center ml-1 text-[#FFFFFF] focus:outline-none" aria-label="Tax Bracket">
+                      <Info className="h-4 w-4" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" align="start" sideOffset={8} className="p-0 bg-transparent border-0 shadow-none">
+                    <div className="relative w-72 rounded-xl bg-[#44C264] text-white p-4">
+                      <span className="absolute -left-1.5 top-4 h-3 w-3 rotate-45 bg-[#44C264]" />
+                      <div className="font-bold mb-1">Tax Bracket</div>
+                      <p className="text-sm leading-5">Your marginal federal/state tax rate.</p>
+                    </div>
+                  </TooltipContent>
+                </UiTooltip>
               </label>
               <Input
                 type="text"
@@ -385,7 +549,21 @@ export default function RentVsBuyCalculator() {
 
             <div className="fs-field mt-4">
               <label className="fs-label">
-                Annual Costs (%) <span title="Lorem"><Info size={14} /></span>
+                Annual Costs (%)
+                <UiTooltip>
+                  <TooltipTrigger asChild>
+                    <button className="inline-flex items-center ml-1 text-[#FFFFFF] focus:outline-none" aria-label="Annual Costs">
+                      <Info className="h-4 w-4" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" align="start" sideOffset={8} className="p-0 bg-transparent border-0 shadow-none">
+                    <div className="relative w-72 rounded-xl bg-[#44C264] text-white p-4">
+                      <span className="absolute -left-1.5 top-4 h-3 w-3 rotate-45 bg-[#44C264]" />
+                      <div className="font-bold mb-1">Annual Costs</div>
+                      <p className="text-sm leading-5">Maintenance and other yearly ownership costs.</p>
+                    </div>
+                  </TooltipContent>
+                </UiTooltip>
               </label>
               <Input
                 type="text"
@@ -398,7 +576,21 @@ export default function RentVsBuyCalculator() {
 
             <div className="fs-field mt-4">
               <label className="fs-label">
-                Selling Costs (%) <span title="Lorem"><Info size={14} /></span>
+                Selling Costs (%)
+                <UiTooltip>
+                  <TooltipTrigger asChild>
+                    <button className="inline-flex items-center ml-1 text-[#FFFFFF] focus:outline-none" aria-label="Selling Costs">
+                      <Info className="h-4 w-4" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" align="start" sideOffset={8} className="p-0 bg-transparent border-0 shadow-none">
+                    <div className="relative w-72 rounded-xl bg-[#44C264] text-white p-4">
+                      <span className="absolute -left-1.5 top-4 h-3 w-3 rotate-45 bg-[#44C264]" />
+                      <div className="font-bold mb-1">Selling Costs</div>
+                      <p className="text-sm leading-5">Agent commissions + typical closing costs when selling.</p>
+                    </div>
+                  </TooltipContent>
+                </UiTooltip>
               </label>
               <Input
                 type="text"
@@ -411,7 +603,21 @@ export default function RentVsBuyCalculator() {
 
             <div className="fs-field mt-4">
               <label className="fs-label">
-                Annual Appreciation (%) <span title="Lorem"><Info size={14} /></span>
+                Annual Appreciation (%)
+                <UiTooltip>
+                  <TooltipTrigger asChild>
+                    <button className="inline-flex items-center ml-1 text-[#FFFFFF] focus:outline-none" aria-label="Appreciation">
+                      <Info className="h-4 w-4" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" align="start" sideOffset={8} className="p-0 bg-transparent border-0 shadow-none">
+                    <div className="relative w-72 rounded-xl bg-[#44C264] text-white p-4">
+                      <span className="absolute -left-1.5 top-4 h-3 w-3 rotate-45 bg-[#44C264]" />
+                      <div className="font-bold mb-1">Appreciation</div>
+                      <p className="text-sm leading-5">Expected yearly growth rate of the home value.</p>
+                    </div>
+                  </TooltipContent>
+                </UiTooltip>
               </label>
               <Input
                 type="text"
@@ -433,7 +639,21 @@ export default function RentVsBuyCalculator() {
           >
             <div className="fs-field">
               <label className="fs-label">
-                Monthly Rent <span title="Lorem"><Info size={14} /></span>
+                Monthly Rent
+                <UiTooltip>
+                  <TooltipTrigger asChild>
+                    <button className="inline-flex items-center ml-1 text-[#FFFFFF] focus:outline-none" aria-label="Monthly Rent">
+                      <Info className="h-4 w-4" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" align="start" sideOffset={8} className="p-0 bg-transparent border-0 shadow-none">
+                    <div className="relative w-72 rounded-xl bg-[#44C264] text-white p-4">
+                      <span className="absolute -left-1.5 top-4 h-3 w-3 rotate-45 bg-[#44C264]" />
+                      <div className="font-bold mb-1">Monthly Rent</div>
+                      <p className="text-sm leading-5">Your current rent payment.</p>
+                    </div>
+                  </TooltipContent>
+                </UiTooltip>
               </label>
               <Input
                 type="text"
@@ -446,7 +666,21 @@ export default function RentVsBuyCalculator() {
 
             <div className="fs-field mt-4">
               <label className="fs-label">
-                Renters Insurance (Monthly) <span title="Lorem"><Info size={14} /></span>
+                Renters Insurance (Monthly)
+                <UiTooltip>
+                  <TooltipTrigger asChild>
+                    <button className="inline-flex items-center ml-1 text-[#FFFFFF] focus:outline-none" aria-label="Renters Insurance">
+                      <Info className="h-4 w-4" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" align="start" sideOffset={8} className="p-0 bg-transparent border-0 shadow-none">
+                    <div className="relative w-72 rounded-xl bg-[#44C264] text-white p-4">
+                      <span className="absolute -left-1.5 top-4 h-3 w-3 rotate-45 bg-[#44C264]" />
+                      <div className="font-bold mb-1">Renters Insurance</div>
+                      <p className="text-sm leading-5">Average monthly renters policy premium.</p>
+                    </div>
+                  </TooltipContent>
+                </UiTooltip>
               </label>
               <Input
                 type="text"
@@ -461,7 +695,21 @@ export default function RentVsBuyCalculator() {
 
             <div className="fs-field mt-4">
               <label className="fs-label">
-                Rent Appreciation (%) <span title="Lorem"><Info size={14} /></span>
+                Rent Appreciation (%)
+                <UiTooltip>
+                  <TooltipTrigger asChild>
+                    <button className="inline-flex items-center ml-1 text-[#FFFFFF] focus:outline-none" aria-label="Rent Appreciation">
+                      <Info className="h-4 w-4" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="right" align="start" sideOffset={8} className="p-0 bg-transparent border-0 shadow-none">
+                    <div className="relative w-72 rounded-xl bg-[#44C264] text-white p-4">
+                      <span className="absolute -left-1.5 top-4 h-3 w-3 rotate-45 bg-[#44C264]" />
+                      <div className="font-bold mb-1">Rent Growth</div>
+                      <p className="text-sm leading-5">Expected annual increase in rent.</p>
+                    </div>
+                  </TooltipContent>
+                </UiTooltip>
               </label>
               <Input
                 type="text"
@@ -479,55 +727,71 @@ export default function RentVsBuyCalculator() {
         </div>
       </div>
 
-      {/* CENTER + RIGHT: matches your red-box sections */}
+      {/* CENTER + RIGHT */}
       <div className="grid gap-6" style={{ gridTemplateColumns: "1fr 420px" }}>
-        {/* Top row: Years card + two KPI tiles */}
-        <div className="years-strip pc-strip--green">
+        {/* Top row: Years + KPI tiles */}
+        <div className="rounded-xl border border-green-200 bg-green-50">
           <div className="px-4 py-3">
             <div className="text-sm font-semibold opacity-80 mb-2">Years</div>
-            <div className="rvb-slider">
+
+            {/* ======= CUSTOM THUMB WITH NUMBER ON IT ======= */}
+            <div
+              className="rvb-slider rvb-slider--thumbnum"
+              style={
+                {
+                  ["--_p" as any]: `${pct}%`, // filled portion
+                  ["--v" as any]: pct,        // thumb position 0..100
+                } as React.CSSProperties
+              }
+            >
               <input
                 type="range"
-                min={1}
-                max={40}
+                min={minYears}
+                max={maxYears}
                 value={years}
                 onChange={(e) => setYears(Number(e.target.value))}
               />
-              <div
-                className="rvb-slider__bubble"
-                style={
-                  {
-                    ["--v" as any]: `${((years - 1) / (40 - 1)) * 100}`,
-                  } as React.CSSProperties
-                }
-              >
-                {years}
-              </div>
+              <div className="rvb-slider__thumb">{years}</div>
             </div>
+
             <div className="text-right text-sm font-semibold opacity-80 mt-1">
               {years} years
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <div className="rvb-kpi">
-            <div className="rvb-kpi__label">YEAR</div>
-            <div className="rvb-kpi__value">{years}</div>
+        <div className="grid grid-cols-2 gap-4 self-start h-auto">
+          <div className="rounded-xl border border-green-200 bg-green-100 text-center py-6">
+            <div className="text-xs font-semibold tracking-wide opacity-70">YEAR</div>
+            <div className="text-[28px] font-extrabold mt-2">{years}</div>
           </div>
-          <div className="rvb-kpi">
-            <div className="rvb-kpi__label">BUY GAIN</div>
-            <div className="rvb-kpi__value">${currency(Math.max(0, buyGain))}</div>
+          <div className="rounded-xl border border-green-200 bg-green-100 text-center py-6">
+            <div className="text-xs font-semibold tracking-wide opacity-70">BUY GAIN</div>
+            <div className="text-[28px] font-extrabold mt-2" style={{ color: Math.max(0, buyGain) > 0 ? "rgb(93, 199, 111)" : "rgb(93, 199, 111)" }}>${currency(Math.max(0, buyGain))}</div>
           </div>
         </div>
 
         {/* Second row: Results Summary (left) */}
-        <Card className="pc-card">
+        <Card className="pc-card self-start h-auto">
           <CardHeader className="pc-card__header">
-            <CardTitle className="pc-card__title">
+            <CardTitle className="pc-card__title flex items-center">
               Results Summary
-              
-              <span title="Lorem"><Info size={16} className="inline-block ml-2 opacity-70 align-[-2px]" /></span>
+              <UiTooltip>
+                <TooltipTrigger asChild>
+                  <button aria-label="Results Summary Info" className="inline-flex items-center ml-2 text-black focus:outline-none">
+                    <Info size={16} className="opacity-70" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="right" align="start" sideOffset={8} className="p-0 bg-transparent border-0 shadow-none">
+                  <div className="relative w-72 rounded-xl bg-[#44C264] text-white p-4">
+                    <span className="absolute -left-1.5 top-4 h-3 w-3 rotate-45 bg-[#44C264]" />
+                    <div className="font-bold mb-1">Results Summary</div>
+                    <p className="text-sm leading-5">
+                      Quick comparison of cumulative costs and savings for buying vs renting over the selected years.
+                    </p>
+                  </div>
+                </TooltipContent>
+              </UiTooltip>
             </CardTitle>
           </CardHeader>
           <CardContent className="pc-card__body">
@@ -563,8 +827,8 @@ export default function RentVsBuyCalculator() {
               <span className="rvb-row__val">--</span>
             </div>
 
-            <div className="rvb-row rvb-row--em">
-              <span className="rvb-row__label">Adjusted Net Cash Savings</span>
+            <div className="rvb-row">
+              <span className="rvb-row__label font-semibold">Adjusted Net Cash Savings</span>
               <span className="rvb-row__val text-green-700 font-semibold">
                 ${currency(adjustedNetCashSavingsBuy)}
               </span>
@@ -573,66 +837,64 @@ export default function RentVsBuyCalculator() {
 
             <hr className="my-4 border-green-200" />
 
-            <div className="text-sm font-semibold mb-2">Rent</div>
-            <div className="rvb-bar">
-              <div className="rvb-bar__fill" style={{ width: `${rentBarPct}%` }} />
-              <div className="rvb-bar__val">${currency(adjustedNetCashSavingsRent)}</div>
+            <div className="text-sm font-semibold mb-2 flex items-center justify-between">
+              <span>Rent</span>
+              <span>${currency(adjustedNetCashSavingsRent)}</span>
+            </div>
+            <div className="w-full h-6 rounded-md bg-neutral-200/80 overflow-hidden">
+              <div className="h-full bg-neutral-800/90" style={{ width: `${rentBarPct}%` }} />
             </div>
 
-            <div className="text-sm font-semibold mt-4 mb-2">Buy</div>
-            <div className="rvb-bar rvb-bar--buy">
-              <div className="rvb-bar__fill" style={{ width: `${buyBarPct}%` }} />
-              <div className="rvb-bar__val">${currency(adjustedNetCashSavingsBuy)}</div>
+            <div className="text-sm font-semibold mt-4 mb-2 flex items-center justify-between">
+              <span>Buy</span>
+              <span>${currency(adjustedNetCashSavingsBuy)}</span>
+            </div>
+            <div className="w-full h-6 rounded-md bg-green-100 overflow-hidden">
+              <div className="h-full bg-green-500/80" style={{ width: `${buyBarPct}%` }} />
             </div>
           </CardContent>
         </Card>
 
-        {/* Right: BUY/RENT tiles + three narrative cards */}
+        {/* Right: BUY/RENT tiles + narrative cards */}
         <div className="grid gap-4">
           <div className="grid grid-cols-2 gap-4">
-            <div className="rvb-kpi">
-              <div className="rvb-kpi__label">BUY</div>
-              <div className="rvb-kpi__value">${currency(adjustedNetCashSavingsBuy)}</div>
+            <div className="rounded-xl border border-green-200 bg-green-100 text-center py-8">
+              <div className="text-xs font-semibold tracking-wide opacity-70">BUY</div>
+              <div className="text-[28px] font-extrabold mt-2">${currency(adjustedNetCashSavingsBuy)}</div>
             </div>
-            <div className="rvb-kpi">
-              <div className="rvb-kpi__label">RENT</div>
-              <div className="rvb-kpi__value">${currency(adjustedNetCashSavingsRent)}</div>
-            </div>
-          </div>
-
-          <div className="rvb-note">
-            <div className="rvb-note__title">Out of Pocket Cost:</div>
-            <div className="rvb-note__body">
-              <p>
-                If you opt for homeownership of a property valued at <b>${currency(homePrice)}</b>, your
-                total expenses out of pocket for <b>{years} years</b> would add up to{" "}
-                <b>${currency(cashSpentBuying)}</b>. However, if you choose to rent instead, your overall
-                expenditure would come to <b>${currency(cashSpentRenting)}</b>, thus saving you{" "}
-                <b>${currency(Math.max(0, cashSpentRenting - cashSpentBuying))}</b> (which also covers the
-                down payment you would have otherwise made).
-              </p>
+            <div className="rounded-xl border border-green-200 bg-green-100 text-center py-8">
+              <div className="text-xs font-semibold tracking-wide opacity-70">RENT</div>
+              <div className="text-[28px] font-extrabold mt-2">${currency(adjustedNetCashSavingsRent)}</div>
             </div>
           </div>
 
-          <div className="rvb-note">
-            <div className="rvb-note__title">Financial Gain:</div>
-            <div className="rvb-note__body">
-              <p>
-                After <b>{years} years</b>, if you choose to purchase the property, the value of equity in
-                your home would be <b>${currency(equity)}</b>, which you can access upon selling it.
-              </p>
-            </div>
+          <div className="rounded-xl border border-rose-200 bg-rose-100 p-4">
+            <div className="font-semibold text-lg mb-1">Out of Pocket Cost:</div>
+            <p className="text-sm leading-6">
+              If you opt for homeownership of a property valued at <b>${currency(homePrice)}</b>, your
+              total expenses out of pocket for <b>{years} years</b> would add up to{" "}
+              <b>${currency(cashSpentBuying)}</b>. However, if you choose to rent instead, your overall
+              expenditure would come to <b>${currency(cashSpentRenting)}</b>, thus saving you{" "}
+              <b>${currency(Math.max(0, cashSpentRenting - cashSpentBuying))}</b> (which also covers the
+              down payment you would have otherwise made).
+            </p>
           </div>
 
-          <div className="rvb-note">
-            <div className="rvb-note__title">Summary:</div>
-            <div className="rvb-note__body">
-              <p>
-                Based on the overall expenses incurred and the equity gained, it would be more advantageous
-                for you to buy the property instead of renting, provided you intend to reside in the house
-                for more than <b>{years}</b> years.
-              </p>
-            </div>
+          <div className="rounded-xl border border-rose-200 bg-rose-100 p-4">
+            <div className="font-semibold text-lg mb-1">Financial Gain:</div>
+            <p className="text-sm leading-6">
+              After <b>{years} years</b>, if you choose to purchase the property, the value of equity in
+              your home would be <b>${currency(equity)}</b>, which you can access upon selling it.
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-rose-200 bg-rose-100 p-4">
+            <div className="font-semibold text-lg mb-1">Summary:</div>
+            <p className="text-sm leading-6">
+              Based on the overall expenses incurred and the equity gained, it would be more advantageous
+              for you to buy the property instead of renting, provided you intend to reside in the house
+              for more than <b>{years}</b> years.
+            </p>
           </div>
         </div>
       </div>

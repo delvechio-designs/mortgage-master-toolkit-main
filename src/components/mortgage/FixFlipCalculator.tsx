@@ -117,7 +117,7 @@ export default function FixFlipCalculator() {
   );
 
   return (
-    <div className="grid gap-6" style={{ gridTemplateColumns: "430px 1fr" }}>
+    <div className="grid gap-6" style={{ gridTemplateColumns: "500px 1fr" }}>
       {/* LEFT SIDEBAR PANEL */}
       <div className="fs-panel fs-fixed">
         <h2 className="fs-title">Fix & Flip Calculator</h2>
@@ -164,7 +164,7 @@ export default function FixFlipCalculator() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {[3, 6, 9, 12, 15, 18].map((m) => (
+                  {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18].map((m) => (
                     <SelectItem key={m} value={String(m)}>
                       {m} Months
                     </SelectItem>
@@ -195,20 +195,21 @@ export default function FixFlipCalculator() {
 
             {/* Row 4 */}
             <div className="fs-field">
-              <label className="fs-label">Purchase Price LTV</label>
-              <Select value={String(ltvPct)} onValueChange={(v) => setLtvPct(Number(v))}>
-                <SelectTrigger className="fs-input">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {[70, 75, 80, 85, 90].map((v) => (
-                    <SelectItem key={v} value={String(v)}>
-                      {v}%
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+  <label className="fs-label">Purchase Price LTV</label>
+  <Select value={String(ltvPct)} onValueChange={(v) => setLtvPct(Number(v))}>
+    <SelectTrigger className="fs-input">
+      <SelectValue />
+    </SelectTrigger>
+    <SelectContent>
+      {[65, 70, 75, 80, 85, 90].map((v) => (
+        <SelectItem key={v} value={String(v)}>
+          {v}%{v >= 85 ? " (Experienced Only)" : ""}
+        </SelectItem>
+      ))}
+    </SelectContent>
+  </Select>
+</div>
+
             <div className="fs-field">
               <label className="fs-label">Interest Rate</label>
               <Select
@@ -219,12 +220,17 @@ export default function FixFlipCalculator() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {[8, 9, 10, 11, 12].map((v) => (
-                    <SelectItem key={v} value={String(v)}>
-                      {v.toFixed(3)}%
-                    </SelectItem>
-                  ))}
-                </SelectContent>
+  {Array.from({ length: Math.round((12 - 9) / 0.125) + 1 }, (_, i) => {
+    // avoid float drift, keep as number
+    const rate = Math.round((9 + i * 0.125) * 1000) / 1000; // 9.000 → 12.000
+    return (
+      <SelectItem key={rate} value={String(rate)}>
+        {rate.toFixed(3)}%
+      </SelectItem>
+    );
+  })}
+</SelectContent>
+
               </Select>
             </div>
 
@@ -239,7 +245,7 @@ export default function FixFlipCalculator() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {[0, 1, 1.5, 2, 2.5, 3].map((v) => (
+                  {[2, 2.25, 2.5, 2.75, 3].map((v) => (
                     <SelectItem key={v} value={String(v)}>
                       {v.toFixed(2)}%
                     </SelectItem>
@@ -257,7 +263,7 @@ export default function FixFlipCalculator() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {[1, 2, 3, 4].map((v) => (
+                  {[2, 2.5, 3, 3.5, 4].map((v) => (
                     <SelectItem key={v} value={String(v)}>
                       {v.toFixed(1)}%
                     </SelectItem>
@@ -277,7 +283,7 @@ export default function FixFlipCalculator() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {[4, 5, 6, 7].map((v) => (
+                  {[1, 2, 3, 4, 5, 6, 7].map((v) => (
                     <SelectItem key={v} value={String(v)}>
                       {v}%
                     </SelectItem>
@@ -292,9 +298,9 @@ export default function FixFlipCalculator() {
       </div>
 
       {/* RIGHT CONTENT */}
-      <div className="grid gap-6">
+      <div className="grid gap-6 self-start h-auto">
         {/* KPI strip (4 boxes) */}
-        <div className="grid grid-cols-4 gap-6">
+        <div className="grid grid-cols-4 gap-6 self-start h-auto">
           <div className="dscr-kpi dscr-kpi--green">
             <div className="dscr-kpi__label">Borrower Equity Needed</div>
             <div className="dscr-kpi__value">$ {fmt(borrowerEquityNeeded)}</div>

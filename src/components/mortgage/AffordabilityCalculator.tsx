@@ -314,9 +314,9 @@ export const AffordabilityCalculator = () => {
                     <button
                       type="button"
                       aria-label="What counts as monthly debts?"
-                      className="inline-flex items-center ml-1 text-[#9fb0cc] hover:text-white focus:outline-none"
+                      className="inline-flex items-center ml-1 text-[#9fb0cc] focus:outline-none"
                     >
-                      <Info className="h-4 w-4" />
+                      <Info className="h-4 w-4"/>
                     </button>
                   </TooltipTrigger>
                   <TooltipContent
@@ -327,8 +327,8 @@ export const AffordabilityCalculator = () => {
                   >
                     <div className="relative w-72 rounded-xl bg-[#44C264] text-white p-4">
                       <span className="absolute -left-1.5 top-4 h-3 w-3 rotate-45 bg-[#44C264]" />
-                      <div className="font-semibold mb-1">Monthly Debts</div>
-                      <p className="text-sm leading-5">
+                      <div className="font-bold mb-1">Monthly Debts</div>
+                      <p className="text-sm font-normal leading-5">
                         Monthly Debt includes the payments you make each month on auto loans,
                         and credit cards (minimum payment) and student loans. Exclude Rent and
                         Utilities.
@@ -425,7 +425,7 @@ export const AffordabilityCalculator = () => {
                   onChange={(v)=> setTermMode(v === "Year" ? "years" : "months")}
                   left="Year"
                   right="Month"
-                  className="w-[160px]"
+                  
                 />
               </div>
             </div>

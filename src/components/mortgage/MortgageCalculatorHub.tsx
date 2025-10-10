@@ -30,25 +30,32 @@ export const MortgageCalculatorHub = () => {
 
 
         <Card className="calculator-card">
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8 h-auto p-1 bg-secondary/30">
-              {calculators.map((calc) => (
-                <TabsTrigger
-                  key={calc.id}
-                  value={calc.id}
-                  className="calculator-tab text-xs lg:text-sm px-2 py-3 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
-                >
-                  {calc.label}
-                </TabsTrigger>
-              ))}
-            </TabsList>
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+  {/* Top nav */}
+  <div className="calc-nav border-b border-neutral-200">
+    <h2 className="calc-title">Calculator</h2>
 
-            {calculators.map((calc) => (
-              <TabsContent key={calc.id} value={calc.id} className="mt-6">
-                <calc.component />
-              </TabsContent>
-            ))}
-          </Tabs>
+    <TabsList className="calc-tablist">
+      {calculators.map((calc) => (
+        <TabsTrigger
+          key={calc.id}
+          value={calc.id}
+          className="calc-trigger"
+        >
+          {calc.label}
+        </TabsTrigger>
+      ))}
+    </TabsList>
+  </div>
+
+  {/* Tab bodies */}
+  {calculators.map((calc) => (
+    <TabsContent key={calc.id} value={calc.id} className="mt-6">
+      <calc.component />
+    </TabsContent>
+  ))}
+</Tabs>
+
         </Card>
       </div>
     </div>
