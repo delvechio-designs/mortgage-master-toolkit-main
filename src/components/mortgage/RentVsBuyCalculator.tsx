@@ -723,7 +723,12 @@ export default function RentVsBuyCalculator() {
             </div>
           </Section>
 
-          <Button className="fs-cta mt-5 w-full">GET A QUOTE</Button>
+          <Button asChild className="fs-cta w-full mt-5">
+  <a href="https://creomortgage.com/#form" target="_blank" rel="noopener noreferrer">
+    GET A QUOTE
+  </a>
+</Button>
+
         </div>
       </div>
 

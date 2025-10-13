@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Info } from "lucide-react";
+import { Tooltip as UiTooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 
 /* ------------------------------- helpers ------------------------------- */
 
@@ -195,20 +196,20 @@ export default function FixFlipCalculator() {
 
             {/* Row 4 */}
             <div className="fs-field">
-  <label className="fs-label">Purchase Price LTV</label>
-  <Select value={String(ltvPct)} onValueChange={(v) => setLtvPct(Number(v))}>
-    <SelectTrigger className="fs-input">
-      <SelectValue />
-    </SelectTrigger>
-    <SelectContent>
-      {[65, 70, 75, 80, 85, 90].map((v) => (
-        <SelectItem key={v} value={String(v)}>
-          {v}%{v >= 85 ? " (Experienced Only)" : ""}
-        </SelectItem>
-      ))}
-    </SelectContent>
-  </Select>
-</div>
+              <label className="fs-label">Purchase Price LTV</label>
+              <Select value={String(ltvPct)} onValueChange={(v) => setLtvPct(Number(v))}>
+                <SelectTrigger className="fs-input">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {[65, 70, 75, 80, 85, 90].map((v) => (
+                    <SelectItem key={v} value={String(v)}>
+                      {v}%{v >= 85 ? " (Experienced Only)" : ""}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
 
             <div className="fs-field">
               <label className="fs-label">Interest Rate</label>
@@ -220,17 +221,15 @@ export default function FixFlipCalculator() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-  {Array.from({ length: Math.round((12 - 9) / 0.125) + 1 }, (_, i) => {
-    // avoid float drift, keep as number
-    const rate = Math.round((9 + i * 0.125) * 1000) / 1000; // 9.000 → 12.000
-    return (
-      <SelectItem key={rate} value={String(rate)}>
-        {rate.toFixed(3)}%
-      </SelectItem>
-    );
-  })}
-</SelectContent>
-
+                  {Array.from({ length: Math.round((12 - 9) / 0.125) + 1 }, (_, i) => {
+                    const rate = Math.round((9 + i * 0.125) * 1000) / 1000; // 9.000 → 12.000
+                    return (
+                      <SelectItem key={rate} value={String(rate)}>
+                        {rate.toFixed(3)}%
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
               </Select>
             </div>
 
@@ -293,7 +292,11 @@ export default function FixFlipCalculator() {
             </div>
           </div>
 
-          <Button className="fs-cta w-full mt-5">GET A QUOTE</Button>
+          <Button asChild className="fs-cta w-full mt-5">
+  <a href="https://creomortgage.com/#form" target="_blank" rel="noopener noreferrer">
+    GET A QUOTE
+  </a>
+</Button>
         </div>
       </div>
 
@@ -326,9 +329,34 @@ export default function FixFlipCalculator() {
             <Card className="dscr-card">
               <CardHeader className="dscr-card__header">
                 <CardTitle className="dscr-card__title">Deal Breakdown</CardTitle>
-                <span className="pc-info" title="Lorem ipsum.">
-                  <Info size={16} />
-                </span>
+
+                {/* === EXACT SAME TOOLTIP STRUCTURE AS OTHER PAGE === */}
+                <UiTooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Deal Breakdown info"
+                      className="inline-flex items-center ml-1 text-[#9fb0cc] focus:outline-none"
+                    >
+                      <Info className="h-4 w-4" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent
+                    side="right"
+                    align="start"
+                    sideOffset={8}
+                    className="p-0 bg-transparent border-0 shadow-none"
+                  >
+                    <div className="relative w-72 rounded-xl bg-[#44C264] text-white p-4">
+                      <span className="absolute -left-1.5 top-4 h-3 w-3 rotate-45 bg-[#44C264]" />
+                      <div className="font-bold mb-1">Deal Breakdown</div>
+                      <p className="text-sm font-normal leading-5">
+                        Loan Amount = Purchase Price × LTV + Renovation. Down Payment = Purchase Price − (Purchase Price × LTV).
+                        Monthly Interest is interest-only: Loan Amount × (Rate ÷ 12). Taxes/Insurance shown as monthly allocations.
+                      </p>
+                    </div>
+                  </TooltipContent>
+                </UiTooltip>
               </CardHeader>
               <CardContent className="dscr-card__body">
                 <div className="ds-row">
@@ -369,9 +397,34 @@ export default function FixFlipCalculator() {
             <Card className="dscr-card">
               <CardHeader className="dscr-card__header">
                 <CardTitle className="dscr-card__title">Deal Metrics</CardTitle>
-                <span className="pc-info" title="Lorem ipsum.">
-                  <Info size={16} />
-                </span>
+
+                {/* === EXACT SAME TOOLTIP STRUCTURE AS OTHER PAGE === */}
+                <UiTooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      type="button"
+                      aria-label="Deal Metrics info"
+                      className="inline-flex items-center ml-1 text-[#9fb0cc] focus:outline-none"
+                    >
+                      <Info className="h-4 w-4" />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent
+                    side="right"
+                    align="start"
+                    sideOffset={8}
+                    className="p-0 bg-transparent border-0 shadow-none"
+                  >
+                    <div className="relative w-72 rounded-xl bg-[#44C264] text-white p-4">
+                      <span className="absolute -left-1.5 top-4 h-3 w-3 rotate-45 bg-[#44C264]" />
+                      <div className="font-bold mb-1">Deal Metrics</div>
+                      <p className="text-sm font-normal leading-5">
+                        Closing Costs = Origination + Other Closing. Carrying Costs = (Monthly Interest + Taxes + Insurance) × Term.
+                        Borrower Equity Needed = Down Payment + Closing Costs. Total Cash In Deal = Equity + Carrying.
+                      </p>
+                    </div>
+                  </TooltipContent>
+                </UiTooltip>
               </CardHeader>
               <CardContent className="dscr-card__body dscr-grid">
                 <div className="ds-row">
@@ -398,9 +451,34 @@ export default function FixFlipCalculator() {
           <Card className="dscr-card">
             <CardHeader className="dscr-card__header">
               <CardTitle className="dscr-card__title">Return Metrics</CardTitle>
-              <span className="pc-info" title="Lorem ipsum.">
-                <Info size={16} />
-              </span>
+
+              {/* === EXACT SAME TOOLTIP STRUCTURE AS OTHER PAGE === */}
+              <UiTooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    type="button"
+                    aria-label="Return Metrics info"
+                    className="inline-flex items-center ml-1 text-[#9fb0cc] focus:outline-none"
+                  >
+                    <Info className="h-4 w-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent
+                  side="right"
+                  align="start"
+                  sideOffset={8}
+                  className="p-0 bg-transparent border-0 shadow-none"
+                >
+                  <div className="relative w-72 rounded-xl bg-[#44C264] text-white p-4">
+                    <span className="absolute -left-1.5 top-4 h-3 w-3 rotate-45 bg-[#44C264]" />
+                    <div className="font-bold mb-1">Return Metrics</div>
+                    <p className="text-sm font-normal leading-5">
+                      Net Profit = ARV − (Purchase + Reno + Closing + Carrying + Cost To Sell).
+                      ROI = Net Profit ÷ Total Cash In Deal. LTV on ARV = Loan Amount ÷ ARV.
+                    </p>
+                  </div>
+                </TooltipContent>
+              </UiTooltip>
             </CardHeader>
             <CardContent className="dscr-card__body space-y-3">
               <div className="ds-row">

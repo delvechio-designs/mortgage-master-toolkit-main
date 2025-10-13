@@ -3,13 +3,31 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "build:dev": "vite build --mode development",
-    "lint": "eslint .",
-    "preview": "vite preview"
-  },
+"scripts": {
+  "dev": "vite",
+  "build": "vite build",
+  "build:dev": "vite build --mode development",
+  "lint": "eslint .",
+  "preview": "vite preview",
+
+
+  "clean": "rimraf dist wordpress-plugin/mortgage-master-toolkit-main/assets/build wordpress-plugin/mortgage-master-toolkit-main.zip _pack",
+
+  "build:js": "vite build",
+
+
+  "build:css": "shx mkdir -p wordpress-plugin/mortgage-master-toolkit-main/assets/build && tailwindcss -i ./src/index.css -o ./wordpress-plugin/mortgage-master-toolkit-main/assets/build/style.css --minify",
+
+
+  "stage:plugin": "rimraf _pack && shx mkdir -p _pack/mortgage-master-toolkit/assets/build && cpy \"dist/assets/*.js\" \"_pack/mortgage-master-toolkit/assets/build\" --rename=index.js && cpy \"dist/assets/*.css\" \"_pack/mortgage-master-toolkit/assets/build\" --rename=style.css && (cpy \"dist/assets/*.{woff,woff2,ttf,eot,svg,png,jpg,jpeg,gif,webp}\" \"_pack/mortgage-master-toolkit/assets/build\" --flat --no-overwrite || shx echo \"[MMT] No extra assets (ok)\") && cpy \"wordpress-plugin/mortgage-master-toolkit-main/mortgage-master-toolkit.php\" \"_pack/mortgage-master-toolkit\" --flat --rename=mortgage-master-toolkit.php",
+
+
+  "zip:plugin": "node tools/zip.mjs",
+
+
+  "package:plugin": "npm run clean && npm run build:js && npm run build:css && npm run stage:plugin && npm run zip:plugin"
+}
+,
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",
     "@radix-ui/react-accordion": "^1.2.11",
@@ -69,13 +87,17 @@
     "@types/react-dom": "^18.3.7",
     "@vitejs/plugin-react-swc": "^3.11.0",
     "autoprefixer": "^10.4.21",
+    "bestzip": "^2.2.1",
+    "cpy-cli": "^6.0.0",
     "eslint": "^9.32.0",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
     "globals": "^15.15.0",
     "lovable-tagger": "^1.1.9",
     "postcss": "^8.5.6",
-    "tailwindcss": "^3.4.17",
+    "rimraf": "^6.0.1",
+    "shx": "^0.4.0",
+    "tailwindcss": "^3.4.18",
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.38.0",
     "vite": "^5.4.19"

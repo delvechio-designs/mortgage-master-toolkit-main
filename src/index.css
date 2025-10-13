@@ -690,3 +690,250 @@ p, span, div, a, button, input, textarea, select, option, label, legend {
     transform: scaleX(1)!important;
   }
 }
+/* === Global: force all tooltip text to white === */
+
+/* Radix/Shadcn TooltipContent renders with role="tooltip" */
+[role="tooltip"],
+/* Common custom classes, if any */
+.ui-tooltip-content,
+.tooltip-content,
+/* Recharts tooltip containers & items */
+.recharts-tooltip-wrapper,
+.recharts-default-tooltip,
+.recharts-tooltip-label,
+.recharts-tooltip-item {
+  color: #fff !important;
+}
+
+/* Ensure nested text/icons/links inside are white too */
+[role="tooltip"] *,
+.ui-tooltip-content *,
+.tooltip-content *,
+.recharts-default-tooltip *,
+.recharts-tooltip-wrapper * {
+  color: #fff !important;
+  fill: currentColor !important; /* icons */
+}
+
+/* Optional: keep links readable but use white */
+[role="tooltip"] a,
+.ui-tooltip-content a,
+.tooltip-content a,
+.recharts-default-tooltip a {
+  color: inherit !important;
+  text-decoration: underline; /* remove if you don't want it */
+}
+
+/* =========================
+   RESPONSIVE FIX PACK
+   (append at end of CSS)
+   ========================= */
+
+/* Let the nav scroll on small screens */
+.calc-nav{ overflow-x:auto !important; }
+
+/* Cards and panes fill container width */
+.calculator-card,
+.pc-card,
+.dscr-card,
+.va-refi-card,
+.white-pane,
+.summary-box { width:100% !important; max-width:100% !important; }
+
+/* Keep charts responsive */
+.recharts-wrapper,
+.recharts-surface { width:100% !important; max-width:100% !important; }
+.recharts-wrapper { height:auto !important; min-height:220px !important; }
+
+/* Strips/wraps don't overflow horizontally */
+.pc-strip{ flex-wrap:wrap !important; gap:12px !important; }
+.years-strip{ grid-template-columns:repeat(3,minmax(0,1fr)) !important; }
+
+/* Inputs/selects fill width */
+.fs-input,
+.fs-select,
+.fs-readonly,
+.pc-input,
+.eps-input { width:100% !important; }
+
+/* Remove rigid/fixed heights on small screens */
+@media (max-width: 900px){
+  .fs-fixed{ height:auto !important; }
+  .fs-body{ max-height:none !important; }
+}
+
+/* ======= ONE-COLUMN STACK ON TABLET & DOWN ======= */
+@media (max-width: 1024px){
+  /* Any explicit multi-col grids collapse to 1fr */
+  .grid,
+  .purchase-grid,
+  .dscr-grid,
+  .fs-grid2,
+  .rvb-row { grid-template-columns:1fr !important; }
+
+  /* Override any custom template like [1fr_430px] */
+  .grid-cols-\[1fr_430px\]{ grid-template-columns:1fr !important; }
+
+  /* Generic Tailwind-like grid utilities */
+  .grid-cols-5,
+  .grid-cols-4,
+  .grid-cols-3,
+  .grid-cols-2,
+  .md\:grid-cols-2,
+  .xl\:grid-cols-4 { grid-template-columns:1fr !important; }
+
+  /* Make “main + right” columns stack */
+  .purchase-grid{ display:grid !important; gap:16px !important; }
+  .purchase-main,
+  .purchase-right{ width:100% !important; }
+
+  /* Tighten strip layout */
+  .pc-strip{ justify-content:flex-start !important; }
+}
+
+/* ======= TIGHTER MOBILE (phones) ======= */
+@media (max-width: 640px){
+  /* Container and page padding so content isn’t clipped */
+  .container{ padding-left:1rem !important; padding-right:1rem !important; }
+  .calc-page{ margin-left:auto !important; margin-right:auto !important; }
+
+  /* Titles & spacing */
+  .calc-title{ font-size:18px !important; }
+
+  /* Rows become vertical to avoid overflow */
+  .pc-row,
+  .va-row,
+  .ds-row{ flex-direction:column !important; align-items:flex-start !important; gap:8px !important; }
+
+  /* Years strip: down to 2 then 1 */
+  .years-strip{ grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
+}
+
+@media (max-width: 420px){
+  .years-strip{ grid-template-columns:1fr !important; }
+}
+
+/* Prevent any child from forcing horizontal scroll */
+.calc-page,
+.purchase-grid,
+.calculator-card { overflow-x:hidden !important; }
+
+/* Safety net: anything with fixed widths shrinks on small screens */
+@media (max-width: 1024px){
+  .w-80,.w-72,.w-64,.w-3\/4,
+  .w-\[200px\],.w-\[160px\],.w-\[150px\],.w-\[100px\]{
+    width:100% !important; max-width:100% !important;
+  }
+}
+
+/* Ensure tab underline and triggers wrap nicely */
+.calc-tablist{ flex-wrap:wrap !important; row-gap:8px !important; }
+.calc-trigger{ white-space:nowrap !important; }
+/* =========================
+   TOOLTIP & NAV MOBILE FIXES
+   (append at end of CSS)
+   ========================= */
+
+/* ── 1) Keep ANY tooltip inside the screen and wrap text ─────────── */
+
+/* Shadcn/Radix wrapper created by @radix-ui/popper */
+[data-radix-popper-content-wrapper]{
+  max-width: min(92vw, 420px) !important;
+  width: max-content;
+  overflow: hidden !important;
+}
+
+/* The tooltip panel itself (role=tooltip works for Radix and many libs) */
+[role="tooltip"],
+.ui-tooltip-content,
+.tooltip-content {
+  max-width: min(92vw, 420px) !important;
+  width: max-content;
+  overflow: hidden !important;
+  text-overflow: ellipsis;
+  white-space: normal !important;       /* allow wrapping instead of single line */
+  overflow-wrap: anywhere;              /* break long words/URLs */
+  word-break: break-word;
+  contain: layout paint;                /* avoid weird overflow during transitions */
+  pointer-events: none;                 /* typical for tooltips; remove if you need hoverable */
+}
+
+/* Recharts default tooltip box */
+.recharts-default-tooltip,
+.recharts-tooltip-wrapper {
+  max-width: min(92vw, 360px) !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+}
+
+/* Safety: charts container never pushes layout wider than viewport */
+.recharts-wrapper { max-width: 100% !important; overflow: hidden !important; }
+
+/* ── 2) Mobile/tab NAV: wrap + truncate (no horizontal scroll) ───── */
+
+/* Stop scrolling; allow wrapping */
+.calc-nav{
+  overflow-x: hidden !important;   /* remove horizontal scroll */
+  -webkit-overflow-scrolling: auto !important;
+}
+
+/* Tab list wraps to new lines as needed */
+.calc-tablist{
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 10px 14px !important;       /* row + column gap */
+  padding: 0 !important;
+  max-width: 100% !important;
+}
+
+/* Each trigger can shrink; truncate long labels */
+.calc-trigger{
+  display: inline-flex !important;
+  align-items: center;
+  max-width: 100% !important;
+  min-width: 120px;                 /* feel free to tweak */
+  flex: 1 1 auto !important;        /* allow shrinking/growing */
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+/* Keep the orange underline inside its truncated width */
+.calc-trigger:after{
+  left: 0 !important;
+  right: 0 !important;
+  width: 100% !important;           /* underline matches the truncated label width */
+}
+
+/* Container constraints so nothing can force horiz scroll on small screens */
+@media (max-width: 768px){
+  .calc-page,
+  .container,
+  .calculator-card{
+    max-width: 100vw !important;
+    overflow-x: hidden !important;
+  }
+
+  /* Make nav items a bit tighter on phones */
+  .calc-trigger{ min-width: 100px; font-size: 13px !important; }
+}
+
+/* ── 3) Prevent any rogue fixed widths from overflowing on mobile ── */
+@media (max-width: 1024px){
+  .calc-page *{
+    max-width: 100% !important;     /* last-resort cap */
+  }
+}
+TooltipContent div {
+    color: white!important;
+}
+/* Offset for sticky header so anchors aren't hidden */
+#form { scroll-margin-top: 100px; }
+
+@media (max-width: 768px) {
+  #form { scroll-margin-top: 72px; } /* adjust for mobile header height */
+}
+
+/* Optional: smooth animation */
+html { scroll-behavior: smooth; }
