@@ -281,13 +281,21 @@ export const AffordabilityCalculator = () => {
         <h2 className="fs-title">Affordability Calculator</h2>
 
         <Tabs value={program} onValueChange={(v)=>setProgram(v as ProgramId)} className="fs-tabs">
-          <TabsList className="bg-transparent grid grid-cols-5 h-auto p-0 gap-3">
-            {PROGRAMS.map(p => (
-              <TabsTrigger key={p.id} value={p.id} className="tab">{p.name}</TabsTrigger>
-            ))}
-          </TabsList>
-          {PROGRAMS.map(p => <TabsContent key={p.id} value={p.id} />)}
-        </Tabs>
+  <TabsList className="bg-transparent flex w-full flex-nowrap items-center justify-between gap-1 p-0">
+    {PROGRAMS.map(p => (
+      <TabsTrigger
+        key={p.id}
+        value={p.id}
+        className="tab flex-1 min-w-0 px-2 py-1 text-[11px] leading-none whitespace-nowrap"
+      >
+        <span className="block w-full text-center truncate">{p.name}</span>
+      </TabsTrigger>
+    ))}
+  </TabsList>
+
+  {PROGRAMS.map(p => <TabsContent key={p.id} value={p.id} />)}
+</Tabs>
+
 
         <div className="fs-body mt-2">
           {/* ==== INLINED SIDEBAR (no nested component = no remounts) ==== */}
@@ -850,125 +858,160 @@ export const AffordabilityCalculator = () => {
         </div>
       </div>
 
-      {/* MIDDLE */}
-      <div className="flex flex-col gap-4">
-        <Card className="rounded-[14px] h-[280px]">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-[18px]">Payment Breakdown</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex flex-row gap-6">
-              <div className="h-48 w-[200px] flex flex-row items-center justify-center">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <ReTooltip formatter={(v)=>`$${Number(v).toLocaleString(undefined,{maximumFractionDigits:2})}`} />
-                    <Pie
-                      data={paymentBreakdown}
-                      dataKey="value"
-                      nameKey="name"
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={84}
-                      paddingAngle={2}
-                    >
-                      {paymentBreakdown.map((s, i) => (
-                        <Cell key={i} fill={s.color} />
-                      ))}
-                      <Label position="center" content={renderCenterMonthlyLabel(totalMonthlyPayment)} />
-                    </Pie>
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
+{/* MIDDLE */}
+<div className="flex flex-col gap-4">
+  <Card className="rounded-[14px] h-auto md:min-h-[280px]">
+    <CardHeader className="pb-2">
+      <CardTitle className="text-[18px]">Payment Breakdown</CardTitle>
+    </CardHeader>
 
-              <div className="space-y-3 flex flex-col justify-center">
-                {paymentBreakdown.map((item) => (
-                  <div key={item.name} className="flex items-center justify-between text-sm">
-                    <div className="flex items-center gap-2">
-                      <span className="inline-block h-3 w-3 rounded-full" style={{ background: item.color }} />
-                      <span style={{ fontWeight: "bold", fontSize: "13px" }}>{item.name}</span>
-                    </div>
-                    <span style={{ color: "#6C8971", fontWeight: "bold", marginLeft: "10px" }}>${item.value.toLocaleString(undefined, { maximumFractionDigits: 2 })}</span>
-                  </div>
+    <CardContent className="px-4 pb-4 md:px-6 md:pb-6">
+      <div className="flex flex-col md:flex-row gap-6">
+        <div className="h-48 w-full md:w-[300px] flex items-center justify-center">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <ReTooltip formatter={(v) => `$${Number(v).toLocaleString(undefined, { maximumFractionDigits: 2 })}`} />
+              <Pie
+                data={paymentBreakdown}
+                dataKey="value"
+                nameKey="name"
+                cx="50%"
+                cy="50%"
+                innerRadius={60}
+                outerRadius={84}
+                paddingAngle={2}
+              >
+                {paymentBreakdown.map((s, i) => (
+                  <Cell key={i} fill={s.color} />
                 ))}
+                <Label position="center" content={renderCenterMonthlyLabel(totalMonthlyPayment)} />
+              </Pie>
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+
+        <div className="space-y-3 flex flex-col justify-center w-full">
+          {paymentBreakdown.map((item) => (
+            <div key={item.name} className="flex items-center justify-between text-sm">
+              <div className="flex items-center gap-2">
+                <span className="inline-block h-3 w-3 rounded-full" style={{ background: item.color }} />
+                <span style={{ fontWeight: "bold", fontSize: "13px" }}>{item.name}</span>
               </div>
+              <span style={{ color: "#6C8971", fontWeight: "bold", marginLeft: "10px" }}>
+                ${item.value.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+              </span>
             </div>
-          </CardContent>
-        </Card>
-
-        <Card className="rounded-[14px] h-[auto]">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-[18px]">Loan Details</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 gap-6">
-              <div>
-                <div className="text-neutral-500 text-sm">Home Value:</div>
-                <div className="text-[18px] font-semibold mt-2">${homePriceN.toLocaleString()}</div>
-
-                <div className="mt-4 text-neutral-500 text-sm">
-                  {program === "fha" ? "Monthly FHA Payment:" : program === "va" ? "Monthly VA Payment:" : program === "usda" ? "Monthly USDA Payment:" : "Monthly Conventional Payment:"}
-                </div>
-                <div className="text-[18px] font-semibold mt-2">${monthlyPI.toLocaleString(undefined, { maximumFractionDigits: 2 })}</div>
-
-                {program === "fha" && (
-                  <>
-                    <div className="mt-4 text-neutral-500 text-sm">Monthly MIP:</div>
-                    <div className="text-[18px] font-semibold mt-2">${monthlyMIP.toLocaleString(undefined, { maximumFractionDigits: 2 })}</div>
-                  </>
-                )}
-                {program === "usda" && (
-                  <>
-                    <div className="mt-4 text-neutral-500 text-sm">Monthly USDA MIP:</div>
-                    <div className="text-[18px] font-semibold mt-2">${monthlyUSDAFee.toLocaleString(undefined, { maximumFractionDigits: 2 })}</div>
-                  </>
-                )}
-                {program === "conventional" && monthlyPMI > 0 && (
-                  <>
-                    <div className="mt-4 text-neutral-500 text-sm">Monthly Estimated PMI:</div>
-                    <div className="text-[18px] font-semibold mt-2">${monthlyPMI.toLocaleString(undefined, { maximumFractionDigits: 2 })}</div>
-                  </>
-                )}
-              </div>
-
-              <div>
-                <div className="text-neutral-500 text-sm">Base Loan Amount:</div>
-                <div className="text-[18px] font-semibold mt-2">${baseLoanAmount.toLocaleString(undefined,{maximumFractionDigits:2})}</div>
-
-                <div className="mt-4 text-neutral-500 text-sm">Down Payment:</div>
-                <div className="text-[18px] font-semibold mt-2">${downPayment.toLocaleString()}</div>
-
-                {program === "fha" && (
-                  <>
-                    <div className="mt-4 text-neutral-500 text-sm">Upfront MIP:</div>
-                    <div className="text-[18px] font-semibold mt-2">${upfrontMIPAmount.toLocaleString(undefined,{maximumFractionDigits:2})}</div>
-                    <div className="mt-4 text-neutral-500 text-sm">FHA Loan Amount:</div>
-                    <div className="text-[18px] font-semibold mt-2">${fhaFinancedLoanAmount.toLocaleString(undefined,{maximumFractionDigits:2})}</div>
-                  </>
-                )}
-
-                {program === "va" && (
-                  <>
-                    <div className="mt-4 text-neutral-500 text-sm">VA Funding Fee:</div>
-                    <div className="text-[18px] font-semibold mt-2">${vaFundingFeeAmount.toLocaleString(undefined,{maximumFractionDigits:2})}</div>
-                    <div className="mt-4 text-neutral-500 text-sm">VA Loan Amount:</div>
-                    <div className="text-[18px] font-semibold mt-2">${vaFinalMortgageAmount.toLocaleString(undefined,{maximumFractionDigits:2})}</div>
-                  </>
-                )}
-
-                {program === "usda" && (
-                  <>
-                    <div className="mt-4 text-neutral-500 text-sm">USDA Guarantee Fee:</div>
-                    <div className="text-[18px] font-semibold mt-2">${usdaGuaranteeFeeAmount.toLocaleString(undefined,{maximumFractionDigits:2})}</div>
-                    <div className="mt-4 text-neutral-500 text-sm">USDA Loan Amount:</div>
-                    <div className="text-[18px] font-semibold mt-2">${usdaFinancedLoanAmount.toLocaleString(undefined,{maximumFractionDigits:2})}</div>
-                  </>
-                )}
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+          ))}
+        </div>
       </div>
+    </CardContent>
+  </Card>
+
+  <Card className="rounded-[14px] h-auto">
+    <CardHeader className="pb-2">
+      <CardTitle className="text-[18px]">Loan Details</CardTitle>
+    </CardHeader>
+
+    <CardContent className="px-4 pb-6 md:px-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <div className="text-neutral-500 text-sm">Home Value:</div>
+          <div className="text-[18px] font-semibold mt-2">${homePriceN.toLocaleString()}</div>
+
+          <div className="mt-4 text-neutral-500 text-sm">
+            {program === "fha"
+              ? "Monthly FHA Payment:"
+              : program === "va"
+              ? "Monthly VA Payment:"
+              : program === "usda"
+              ? "Monthly USDA Payment:"
+              : "Monthly Conventional Payment:"}
+          </div>
+          <div className="text-[18px] font-semibold mt-2">
+            ${monthlyPI.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+          </div>
+
+          {program === "fha" && (
+            <>
+              <div className="mt-4 text-neutral-500 text-sm">Monthly MIP:</div>
+              <div className="text-[18px] font-semibold mt-2">
+                ${monthlyMIP.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+              </div>
+            </>
+          )}
+
+          {program === "usda" && (
+            <>
+              <div className="mt-4 text-neutral-500 text-sm">Monthly USDA MIP:</div>
+              <div className="text-[18px] font-semibold mt-2">
+                ${monthlyUSDAFee.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+              </div>
+            </>
+          )}
+
+          {program === "conventional" && monthlyPMI > 0 && (
+            <>
+              <div className="mt-4 text-neutral-500 text-sm">Monthly Estimated PMI:</div>
+              <div className="text-[18px] font-semibold mt-2">
+                ${monthlyPMI.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+              </div>
+            </>
+          )}
+        </div>
+
+        <div>
+          <div className="text-neutral-500 text-sm">Base Loan Amount:</div>
+          <div className="text-[18px] font-semibold mt-2">
+            ${baseLoanAmount.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+          </div>
+
+          <div className="mt-4 text-neutral-500 text-sm">Down Payment:</div>
+          <div className="text-[18px] font-semibold mt-2">${downPayment.toLocaleString()}</div>
+
+          {program === "fha" && (
+            <>
+              <div className="mt-4 text-neutral-500 text-sm">Upfront MIP:</div>
+              <div className="text-[18px] font-semibold mt-2">
+                ${upfrontMIPAmount.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+              </div>
+              <div className="mt-4 text-neutral-500 text-sm">FHA Loan Amount:</div>
+              <div className="text-[18px] font-semibold mt-2">
+                ${fhaFinancedLoanAmount.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+              </div>
+            </>
+          )}
+
+          {program === "va" && (
+            <>
+              <div className="mt-4 text-neutral-500 text-sm">VA Funding Fee:</div>
+              <div className="text-[18px] font-semibold mt-2">
+                ${vaFundingFeeAmount.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+              </div>
+              <div className="mt-4 text-neutral-500 text-sm">VA Loan Amount:</div>
+              <div className="text-[18px] font-semibold mt-2">
+                ${vaFinalMortgageAmount.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+              </div>
+            </>
+          )}
+
+          {program === "usda" && (
+            <>
+              <div className="mt-4 text-neutral-500 text-sm">USDA Guarantee Fee:</div>
+              <div className="text-[18px] font-semibold mt-2">
+                ${usdaGuaranteeFeeAmount.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+              </div>
+              <div className="mt-4 text-neutral-500 text-sm">USDA Loan Amount:</div>
+              <div className="text-[18px] font-semibold mt-2">
+                ${usdaFinancedLoanAmount.toLocaleString(undefined, { maximumFractionDigits: 2 })}
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </CardContent>
+  </Card>
+</div>
+
 
       {/* RIGHT */}
       <div className="space-y-4">

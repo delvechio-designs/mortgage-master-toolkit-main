@@ -32,21 +32,22 @@ export const MortgageCalculatorHub = () => {
         <Card className="calculator-card">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
   {/* Top nav */}
-  <div className="calc-nav border-b border-neutral-200">
-    <h2 className="calc-title">Calculator</h2>
+  <div className="calc-nav border-b border-neutral-200 flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3">
+  <h2 className="calc-title">Calculator</h2>
 
-    <TabsList className="calc-tablist">
-      {calculators.map((calc) => (
-        <TabsTrigger
-          key={calc.id}
-          value={calc.id}
-          className="calc-trigger"
-        >
-          {calc.label}
-        </TabsTrigger>
-      ))}
-    </TabsList>
-  </div>
+  <TabsList className="calc-tablist flex flex-wrap gap-x-6 gap-y-2 w-full lg:w-auto">
+    {calculators.map((calc) => (
+      <TabsTrigger
+        key={calc.id}
+        value={calc.id}
+        className="calc-trigger"
+      >
+        {calc.label}
+      </TabsTrigger>
+    ))}
+  </TabsList>
+</div>
+
 
   {/* Tab bodies */}
   {calculators.map((calc) => (
@@ -55,6 +56,7 @@ export const MortgageCalculatorHub = () => {
     </TabsContent>
   ))}
 </Tabs>
+
 
         </Card>
       </div>
